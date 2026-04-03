@@ -26,10 +26,10 @@ const Categories = () => {
           {categories.map((cat) => (
             <button
               key={cat.name}
-              className="flex flex-col items-center gap-2 min-w-[100px] p-4 rounded-2xl bg-muted/60 hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-all duration-200 snap-start group cursor-pointer"
+              className="flex flex-col items-center gap-2 min-w-[100px] p-4 rounded-2xl bg-secondary/5 hover:bg-secondary/15 border border-secondary/15 hover:border-secondary/30 transition-all duration-200 snap-start group cursor-pointer"
             >
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                <cat.icon className="h-6 w-6 text-primary" />
+              <div className="w-12 h-12 rounded-xl bg-secondary/15 flex items-center justify-center group-hover:bg-secondary/25 transition-colors">
+                <cat.icon className="h-6 w-6 text-secondary" />
               </div>
               <span className="text-sm font-semibold text-foreground">{cat.name}</span>
               <span className="text-xs text-muted-foreground">{cat.count.toLocaleString()}</span>
