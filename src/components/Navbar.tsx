@@ -10,7 +10,9 @@ const Navbar = () => {
         <div className="container flex items-center justify-between h-16 gap-4">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 shrink-0">
-            <span className="text-2xl font-heading font-extrabold tracking-tight text-primary">LBAL</span>
+            <span className="text-2xl font-heading font-extrabold tracking-tight text-primary">
+              LBAL
+            </span>
           </Link>
 
           {/* Mini search */}
@@ -28,12 +30,20 @@ const Navbar = () => {
           {/* Actions */}
           <div className="flex items-center gap-2">
             <Link to="/favorites" className="hidden sm:flex">
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary hover:bg-secondary/10">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-primary hover:bg-secondary/10"
+              >
                 <Heart className="h-5 w-5" />
               </Button>
             </Link>
             <Link to="/messages" className="hidden sm:flex">
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary hover:bg-secondary/10">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-primary hover:bg-secondary/10"
+              >
                 <MessageCircle className="h-5 w-5" />
               </Button>
             </Link>
@@ -44,7 +54,11 @@ const Navbar = () => {
               </Button>
             </Link>
             <Link to="/login">
-              <Button variant="outline" size="icon" className="rounded-xl border-secondary/30 hover:bg-secondary/10">
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-xl border-secondary/30 hover:bg-secondary/10"
+              >
                 <User className="h-5 w-5" />
               </Button>
             </Link>

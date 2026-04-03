@@ -1,44 +1,141 @@
-import { Search, MapPin } from "lucide-react";
+import { Search, MapPin, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 const cities = ["Casablanca", "Rabat", "Marrakech", "Fès", "Tanger", "Agadir"];
 
 const HeroSearch = () => {
+  const [displayedText, setDisplayedText] = useState("");
+  const fullText = "Trouvez tout près de chez vous";
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Typing animation
+  useEffect(() => {
+    let index = 0;
+    const interval = setInterval(() => {
+      if (index < fullText.length) {
+        setDisplayedText(fullText.slice(0, index + 1));
+        index++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 50);
+    return () => clearInterval(interval);
+  }, []);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.8 },
+    },
+  };
+
   return (
-    <section className="py-12 md:py-20 px-4 bg-gradient-to-b from-secondary/5 to-transparent">
-      <div className="container max-w-3xl text-center">
-        <h1 className="text-3xl md:text-5xl font-heading font-extrabold tracking-tight mb-3">
-          Trouvez tout près de chez vous
-        </h1>
-        <p className="text-muted-foreground text-lg mb-8">
+    <section className="py-12 md:py-20 px-4 bg-gradient-to-b from-secondary/5 to-transparent relative overflow-hidden">
+      {/* Parallax background */}
+      <motion.div
+        className="absolute inset-0 -z-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.5 }}
+        transition={{ duration: 1 }}
+      />
+
+      <motion.div
+        className="container max-w-3xl text-center"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {/* Typing animation heading */}
+        <motion.h1
+          className="text-3xl md:text-5xl font-heading font-extrabold tracking-tight mb-3 h-[60px] md:h-[70px] flex items-center justify-center"
+          variants={itemVariants}
+        >
+          {displayedText}
+          <span className="animate-pulse">|</span>
+        </motion.h1>
+
+        {/* Subtitle with fade-in */}
+        <motion.p
+          className="text-muted-foreground text-lg mb-8"
+          variants={itemVariants}
+        >
           Achetez et vendez facilement partout au Maroc
-        </p>
+        </motion.p>
 
         {/* Search bar */}
-        <div className="flex flex-col sm:flex-row items-stretch gap-3 bg-card rounded-2xl p-2 shadow-card border border-secondary/20">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-secondary" />
+        <motion.div
+          className="flex flex-col sm:flex-row items-stretch gap-3 bg-card rounded-2xl p-2 shadow-card border border-secondary/20"
+          variants={itemVariants}
+        >
+          <div className="relative flex-1 group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-secondary group-hover:text-primary transition-colors" />
             <input
               type="text"
               placeholder="Que cherchez-vous ?"
-              className="w-full h-12 pl-11 pr-4 rounded-xl bg-muted/50 border border-secondary/15 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-shadow"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-12 pl-11 pr-4 rounded-xl bg-muted/50 border border-secondary/15 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-all hover:border-secondary/30"
             />
+            {/* Search suggestions dropdown */}
+            {searchQuery && (
+              <motion.div
+                className="absolute top-full left-0 right-0 mt-2 bg-card border border-secondary/20 rounded-xl shadow-lg p-2 z-10"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <p className="text-xs text-muted-foreground px-2 py-1">
+                  Suggestions populaires
+                </p>
+                <button className="w-full text-left px-3 py-2 text-sm hover:bg-secondary/10 rounded-lg transition-colors">
+                  {searchQuery} à Casablanca
+                </button>
+              </motion.div>
+            )}
           </div>
+
           <div className="relative flex-1 sm:max-w-[200px]">
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-secondary" />
-            <select className="w-full h-12 pl-11 pr-4 rounded-xl bg-muted/50 border border-secondary/15 text-sm text-muted-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-secondary/30 cursor-pointer">
+            <select className="w-full h-12 pl-11 pr-4 rounded-xl bg-muted/50 border border-secondary/15 text-sm text-muted-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-secondary/30 cursor-pointer transition-all hover:border-secondary/30">
               <option value="">Toutes les villes</option>
-              {cities.map(city => (
-                <option key={city} value={city}>{city}</option>
+              {cities.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
               ))}
             </select>
           </div>
-          <Button className="h-12 px-8 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl font-semibold text-base">
+
+          <Button className="h-12 px-8 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl font-semibold text-base transition-all hover:shadow-lg">
             <Search className="h-5 w-5 mr-2" />
             Rechercher
           </Button>
-        </div>
-      </div>
+
+          {/* Voice search button */}
+          <motion.button
+            className="h-12 px-4 rounded-xl border border-secondary/20 bg-secondary/5 hover:bg-secondary/15 transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            title="Recherche vocale"
+          >
+            <Mic className="h-5 w-5 text-secondary" />
+          </motion.button>
+        </motion.div>
+      </motion.div>
     </section>
   );
 };
