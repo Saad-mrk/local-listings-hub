@@ -26,10 +26,7 @@ const AnimatedCounter = ({
       animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.5 }}
       transition={{ duration: 0.5 }}
     >
-      <motion.div
-        className="text-4xl font-bold text-primary"
-        initial={{ textContent: "0" }}
-      >
+      <div className="text-4xl font-bold text-primary">
         {isInView && (
           <motion.span
             initial={{ opacity: 0 }}
