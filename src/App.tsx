@@ -7,6 +7,8 @@ import Index from "./pages/Index.tsx";
 import AdDetails from "./pages/AdDetails.tsx";
 import Login from "./pages/Login.tsx";
 import CreateAd from "./pages/CreateAd.tsx";
+import UserDashboard from "./pages/UserDashboard.tsx";
+import AdminDashboard from "./pages/AdminDashboard.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
