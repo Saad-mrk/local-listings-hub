@@ -1,4 +1,4 @@
-import { Search, Plus, User, Heart, MessageCircle } from "lucide-react";
+import { Search, Plus, User, Heart, MessageCircle, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import CategoryNav from "./CategoryNav";
