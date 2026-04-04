@@ -1,9 +1,34 @@
-import { Search, Plus, User, Heart, MessageCircle, LayoutDashboard } from "lucide-react";
-import { Link } from "react-router-dom";
+import {
+  Search,
+  Plus,
+  User,
+  Heart,
+  MessageCircle,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+} from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useUser } from "@/hooks/useUser";
+import NotificationDropdown from "./NotificationDropdown";
 import CategoryNav from "./CategoryNav";
 
 const Navbar = () => {
+  const { user, logout } = useUser();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg">
       <nav className="border-b border-border">
@@ -29,6 +54,7 @@ const Navbar = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
+            <NotificationDropdown />
             <Link to="/favorites" className="hidden sm:flex">
               <Button
                 variant="ghost"
@@ -53,16 +79,63 @@ const Navbar = () => {
                 <span className="hidden sm:inline">Publier</span>
               </Button>
             </Link>
-            <Link to="/dashboard">
-              <Button variant="outline" size="icon" className="rounded-xl border-secondary/30 hover:bg-secondary/10">
-                <LayoutDashboard className="h-5 w-5" />
-              </Button>
-            </Link>
-            <Link to="/login">
-              <Button variant="outline" size="icon" className="rounded-xl border-secondary/30 hover:bg-secondary/10">
-                <User className="h-5 w-5" />
-              </Button>
-            </Link>
+
+            {/* Conditional buttons based on login status */}
+            {user ? (
+              <>
+                <Link to="/dashboard">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-xl border-secondary/30 hover:bg-secondary/10"
+                  >
+                    <LayoutDashboard className="h-5 w-5" />
+                  </Button>
+                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="rounded-xl border-secondary/30 hover:bg-secondary/10"
+                    >
+                      <User className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      disabled
+                      className="font-semibold text-sm"
+                    >
+                      Bonjour, {user.name}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="cursor-pointer">
+                        <User className="mr-2 h-4 w-4" />
+                        Profil
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/settings" className="cursor-pointer">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Paramètres
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Se déconnecter
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <Link to="/login">
+                <Button className="bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl font-semibold">
+                  <User className="mr-2 h-4 w-4" />
+                  Se connecter
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </nav>
