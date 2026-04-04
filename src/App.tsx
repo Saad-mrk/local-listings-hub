@@ -9,6 +9,8 @@ import Login from "./pages/Login.tsx";
 import CreateAd from "./pages/CreateAd.tsx";
 import UserDashboard from "./pages/UserDashboard.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
+import Messages from "./pages/Messages.tsx";
+import Favorites from "./pages/Favorites.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -26,6 +28,8 @@ const App = () => (
           <Route path="/create" element={<CreateAd />} />
           <Route path="/dashboard" element={<UserDashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/favorites" element={<Favorites />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
