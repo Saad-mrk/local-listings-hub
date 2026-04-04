@@ -1,4 +1,4 @@
-import { Search, Plus, User, Heart, MessageCircle } from "lucide-react";
+import { Search, Plus, User, Heart, MessageCircle, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import CategoryNav from "./CategoryNav";
@@ -53,12 +53,13 @@ const Navbar = () => {
                 <span className="hidden sm:inline">Publier</span>
               </Button>
             </Link>
+            <Link to="/dashboard">
+              <Button variant="outline" size="icon" className="rounded-xl border-secondary/30 hover:bg-secondary/10">
+                <LayoutDashboard className="h-5 w-5" />
+              </Button>
+            </Link>
             <Link to="/login">
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-xl border-secondary/30 hover:bg-secondary/10"
-              >
+              <Button variant="outline" size="icon" className="rounded-xl border-secondary/30 hover:bg-secondary/10">
                 <User className="h-5 w-5" />
               </Button>
             </Link>
