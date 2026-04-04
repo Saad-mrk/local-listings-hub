@@ -40,7 +40,7 @@ const AnimatedCounter = ({
             {suffix}
           </motion.span>
         )}
-      </motion.div>
+      </div>
     </motion.div>
   );
 };

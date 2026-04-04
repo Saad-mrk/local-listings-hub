@@ -24,6 +24,8 @@ const App = () => (
           <Route path="/ad/:id" element={<AdDetails />} />
           <Route path="/login" element={<Login />} />
           <Route path="/create" element={<CreateAd />} />
+          <Route path="/dashboard" element={<UserDashboard />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
