@@ -82,7 +82,7 @@ const convItemVariants = {
   visible: (i: number) => ({
     opacity: 1,
     x: 0,
-    transition: { delay: i * 0.05, duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: i * 0.05, duration: 0.35, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
 
@@ -92,11 +92,11 @@ const messageVariants = {
     x: sender === "me" ? 30 : -30,
     scale: 0.95,
   }),
-  visible: (sender: string) => ({
+  visible: () => ({
     opacity: 1,
     x: 0,
     scale: 1,
-    transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
 
