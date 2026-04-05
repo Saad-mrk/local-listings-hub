@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -29,7 +30,13 @@ const Settings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="min-h-screen bg-background"
+    >
       <div className="container py-8">
         <Link
           to="/profile"
@@ -88,7 +95,7 @@ const Settings = () => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

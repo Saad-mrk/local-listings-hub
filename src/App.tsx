@@ -20,6 +20,25 @@ import Settings from "./pages/Settings.tsx";
 
 const queryClient = new QueryClient();
 
+const RoutesWrapper = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/ad/:id" element={<AdDetails />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/create" element={<CreateAd />} />
+      <Route path="/dashboard" element={<UserDashboard />} />
+      <Route path="/admin" element={<AdminDashboard />} />
+      <Route path="/messages" element={<Messages />} />
+      <Route path="/favorites" element={<Favorites />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/settings" element={<Settings />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <NotificationProvider>
@@ -28,20 +47,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/ad/:id" element={<AdDetails />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/verify-email" element={<VerifyEmail />} />
-              <Route path="/create" element={<CreateAd />} />
-              <Route path="/dashboard" element={<UserDashboard />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/messages" element={<Messages />} />
-              <Route path="/favorites" element={<Favorites />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <RoutesWrapper />
           </BrowserRouter>
         </TooltipProvider>
       </UserProvider>

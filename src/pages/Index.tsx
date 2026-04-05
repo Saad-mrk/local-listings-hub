@@ -1,6 +1,5 @@
 import Navbar from "@/components/Navbar";
 import HeroSearch from "@/components/HeroSearch";
-import Categories from "@/components/Categories";
 import AdsGrid from "@/components/AdsGrid";
 import Footer from "@/components/Footer";
 import FeaturedAds from "@/components/FeaturedAds";
@@ -13,11 +12,16 @@ import { motion } from "framer-motion";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="min-h-screen bg-background flex flex-col"
+    >
       <Navbar />
       <main className="flex-1">
         <HeroSearch />
-        <Categories />
 
         {/* Featured Ads Section */}
         <motion.div
@@ -84,7 +88,7 @@ const Index = () => {
 
       {/* ChatBot */}
       <ChatBot />
-    </div>
+    </motion.div>
   );
 };
 

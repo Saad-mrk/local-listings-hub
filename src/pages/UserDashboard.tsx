@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "@/hooks/useUser";
+import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -116,7 +117,13 @@ const UserDashboard = () => {
   const memberSince = new Date(user.id).getFullYear();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="min-h-screen bg-background flex flex-col"
+    >
       <Navbar />
       <main className="flex-1">
         <div className="container py-8 max-w-5xl">
@@ -292,7 +299,7 @@ const UserDashboard = () => {
         </div>
       </main>
       <Footer />
-    </div>
+    </motion.div>
   );
 };
 

@@ -9,6 +9,7 @@ import {
   Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import StarRating from "@/components/StarRating";
@@ -103,7 +104,13 @@ const AdDetails = () => {
   const mockAd = allAds.find((ad) => ad.id === id) || allAds[0];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="min-h-screen bg-background flex flex-col"
+    >
       <Navbar />
       <main className="flex-1">
         <div className="container py-6 max-w-5xl">
@@ -223,7 +230,7 @@ const AdDetails = () => {
         </div>
       </main>
       <Footer />
-    </div>
+    </motion.div>
   );
 };
 

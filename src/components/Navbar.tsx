@@ -9,6 +9,7 @@ import {
   Settings,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,9 +17,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useUser } from "@/hooks/useUser";
 import NotificationDropdown from "./NotificationDropdown";
-import CategoryNav from "./CategoryNav";
+import Categories from "./Categories";
 
 const Navbar = () => {
   const { user, logout } = useUser();
@@ -55,52 +62,101 @@ const Navbar = () => {
           {/* Actions */}
           <div className="flex items-center gap-2">
             <NotificationDropdown />
-            <Link to="/favorites" className="hidden sm:flex">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-primary hover:bg-secondary/10"
-              >
-                <Heart className="h-5 w-5" />
-              </Button>
-            </Link>
-            <Link to="/messages" className="hidden sm:flex">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-primary hover:bg-secondary/10"
-              >
-                <MessageCircle className="h-5 w-5" />
-              </Button>
-            </Link>
-            <Link to="/create">
-              <Button className="bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl gap-2 font-semibold">
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Publier</span>
-              </Button>
-            </Link>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link to="/favorites" className="hidden sm:flex">
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-primary hover:bg-secondary/10"
+                      >
+                        <Heart className="h-5 w-5" />
+                      </Button>
+                    </motion.div>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>Mes favoris</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link to="/messages" className="hidden sm:flex">
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-primary hover:bg-secondary/10"
+                      >
+                        <MessageCircle className="h-5 w-5" />
+                      </Button>
+                    </motion.div>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>Messages</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Link to="/create">
+                <Button className="bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl gap-2 font-semibold">
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Publier</span>
+                </Button>
+              </Link>
+            </motion.div>
 
             {/* Conditional buttons based on login status */}
             {user ? (
               <>
-                <Link to="/dashboard">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="rounded-xl border-secondary/30 hover:bg-secondary/10"
-                  >
-                    <LayoutDashboard className="h-5 w-5" />
-                  </Button>
-                </Link>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link to="/dashboard">
+                        <motion.div
+                          whileHover={{ scale: 1.1 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="rounded-xl border-secondary/30 hover:bg-secondary/10"
+                          >
+                            <LayoutDashboard className="h-5 w-5" />
+                          </Button>
+                        </motion.div>
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent>Tableau de bord</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="rounded-xl border-secondary/30 hover:bg-secondary/10"
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      transition={{ duration: 0.2 }}
                     >
-                      <User className="h-5 w-5" />
-                    </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="rounded-xl border-secondary/30 hover:bg-secondary/10"
+                      >
+                        <User className="h-5 w-5" />
+                      </Button>
+                    </motion.div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
@@ -129,17 +185,22 @@ const Navbar = () => {
                 </DropdownMenu>
               </>
             ) : (
-              <Link to="/login">
-                <Button className="bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl font-semibold">
-                  <User className="mr-2 h-4 w-4" />
-                  Se connecter
-                </Button>
-              </Link>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Link to="/login">
+                  <Button className="bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl font-semibold">
+                    <User className="mr-2 h-4 w-4" />
+                    Se connecter
+                  </Button>
+                </Link>
+              </motion.div>
             )}
           </div>
         </div>
       </nav>
-      <CategoryNav />
+      <Categories />
     </header>
   );
 };

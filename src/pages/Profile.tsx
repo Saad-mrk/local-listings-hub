@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, User, Mail } from "lucide-react";
 import { useEffect } from "react";
@@ -19,7 +20,13 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="min-h-screen bg-background"
+    >
       <div className="container py-8">
         <Link
           to="/"
@@ -67,7 +74,7 @@ const Profile = () => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

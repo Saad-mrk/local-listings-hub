@@ -1,6 +1,15 @@
 import { useState } from "react";
-import { Heart, MapPin, Clock, Search, Grid3X3, List, Trash2 } from "lucide-react";
+import {
+  Heart,
+  MapPin,
+  Clock,
+  Search,
+  Grid3X3,
+  List,
+  Trash2,
+} from "lucide-react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -14,16 +23,18 @@ const mockFavorites = [
     price: 12500,
     city: "Casablanca",
     date: "Aujourd'hui",
-    image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=300&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=300&fit=crop",
     category: "Téléphones",
   },
   {
     id: "2",
-    title: "MacBook Pro M3 14\"",
+    title: 'MacBook Pro M3 14"',
     price: 22000,
     city: "Rabat",
     date: "Hier",
-    image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&h=300&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&h=300&fit=crop",
     category: "Informatique",
   },
   {
@@ -32,7 +43,8 @@ const mockFavorites = [
     price: 14000,
     city: "Tanger",
     date: "Il y a 2 jours",
-    image: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&h=300&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&h=300&fit=crop",
     category: "Téléphones",
   },
   {
@@ -41,7 +53,8 @@ const mockFavorites = [
     price: 5500,
     city: "Fès",
     date: "Il y a 3 jours",
-    image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400&h=300&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400&h=300&fit=crop",
     category: "Jeux & Consoles",
   },
   {
@@ -50,7 +63,8 @@ const mockFavorites = [
     price: 850000,
     city: "Marrakech",
     date: "Il y a 5 jours",
-    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=300&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=300&fit=crop",
     category: "Immobilier",
   },
   {
@@ -59,7 +73,8 @@ const mockFavorites = [
     price: 8500,
     city: "Casablanca",
     date: "Il y a 1 semaine",
-    image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=400&h=300&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=400&h=300&fit=crop",
     category: "Véhicules",
   },
 ];
@@ -69,9 +84,10 @@ const Favorites = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [favorites, setFavorites] = useState(mockFavorites);
 
-  const filtered = favorites.filter((ad) =>
-    ad.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    ad.city.toLowerCase().includes(searchQuery.toLowerCase())
+  const filtered = favorites.filter(
+    (ad) =>
+      ad.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ad.city.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const removeFavorite = (id: string, e: React.MouseEvent) => {
@@ -81,7 +97,13 @@ const Favorites = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="min-h-screen bg-background flex flex-col"
+    >
       <Navbar />
       <main className="flex-1 container py-8 max-w-5xl">
         <div className="flex items-center justify-between mb-6">
@@ -90,13 +112,18 @@ const Favorites = () => {
               <Heart className="h-6 w-6 text-primary fill-primary" />
               Mes Favoris
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">{favorites.length} annonces sauvegardées</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {favorites.length} annonces sauvegardées
+            </p>
           </div>
           <div className="flex gap-1 bg-muted rounded-xl p-1">
             <Button
               variant="ghost"
               size="icon"
-              className={cn("rounded-lg h-8 w-8", viewMode === "grid" && "bg-card shadow-sm")}
+              className={cn(
+                "rounded-lg h-8 w-8",
+                viewMode === "grid" && "bg-card shadow-sm",
+              )}
               onClick={() => setViewMode("grid")}
             >
               <Grid3X3 className="h-4 w-4" />
@@ -104,7 +131,10 @@ const Favorites = () => {
             <Button
               variant="ghost"
               size="icon"
-              className={cn("rounded-lg h-8 w-8", viewMode === "list" && "bg-card shadow-sm")}
+              className={cn(
+                "rounded-lg h-8 w-8",
+                viewMode === "list" && "bg-card shadow-sm",
+              )}
               onClick={() => setViewMode("list")}
             >
               <List className="h-4 w-4" />
@@ -137,7 +167,11 @@ const Favorites = () => {
                 className="group bg-card rounded-2xl border border-border overflow-hidden shadow-card hover:shadow-card-hover transition-all"
               >
                 <div className="relative">
-                  <img src={ad.image} alt={ad.title} className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <img
+                    src={ad.image}
+                    alt={ad.title}
+                    className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
                   <button
                     onClick={(e) => removeFavorite(ad.id, e)}
                     className="absolute top-3 right-3 bg-card/80 backdrop-blur-sm rounded-full p-2 hover:bg-destructive/10 transition-colors"
@@ -150,10 +184,18 @@ const Favorites = () => {
                 </div>
                 <div className="p-4">
                   <h3 className="font-semibold text-sm truncate">{ad.title}</h3>
-                  <p className="text-primary font-bold mt-1">{ad.price.toLocaleString()} DH</p>
+                  <p className="text-primary font-bold mt-1">
+                    {ad.price.toLocaleString()} DH
+                  </p>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">
-                    <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{ad.city}</span>
-                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{ad.date}</span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {ad.city}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {ad.date}
+                    </span>
                   </div>
                 </div>
               </Link>
@@ -167,16 +209,32 @@ const Favorites = () => {
                 to={`/ad/${ad.id}`}
                 className="bg-card rounded-2xl border border-border p-4 shadow-card hover:shadow-card-hover transition-all flex items-center gap-4"
               >
-                <img src={ad.image} alt={ad.title} className="w-24 h-20 rounded-xl object-cover shrink-0" />
+                <img
+                  src={ad.image}
+                  alt={ad.title}
+                  className="w-24 h-20 rounded-xl object-cover shrink-0"
+                />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-sm truncate">{ad.title}</h3>
-                    <span className="text-xs bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">{ad.category}</span>
+                    <h3 className="font-semibold text-sm truncate">
+                      {ad.title}
+                    </h3>
+                    <span className="text-xs bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">
+                      {ad.category}
+                    </span>
                   </div>
-                  <p className="text-primary font-bold text-sm mt-1">{ad.price.toLocaleString()} DH</p>
+                  <p className="text-primary font-bold text-sm mt-1">
+                    {ad.price.toLocaleString()} DH
+                  </p>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                    <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{ad.city}</span>
-                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{ad.date}</span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {ad.city}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {ad.date}
+                    </span>
                   </div>
                 </div>
                 <button
@@ -191,7 +249,7 @@ const Favorites = () => {
         )}
       </main>
       <Footer />
-    </div>
+    </motion.div>
   );
 };
 

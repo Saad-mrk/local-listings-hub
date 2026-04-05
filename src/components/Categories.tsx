@@ -1,26 +1,69 @@
 import {
-  Car,
-  Home,
-  Smartphone,
-  Monitor,
-  Sofa,
-  Shirt,
-  Briefcase,
-  Dumbbell,
+  User,
+  Users,
+  Baby,
+  Crown,
+  Activity,
   Sparkles,
+  TrendingUp,
+  Tag,
 } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
 
 const categories = [
-  { name: "Véhicules", icon: Car, count: 12340, trend: true },
-  { name: "Immobilier", icon: Home, count: 8920 },
-  { name: "Téléphones", icon: Smartphone, count: 15670, trend: true },
-  { name: "Informatique", icon: Monitor, count: 6780 },
-  { name: "Maison", icon: Sofa, count: 9430 },
-  { name: "Mode", icon: Shirt, count: 11200, trend: true },
-  { name: "Emploi", icon: Briefcase, count: 4560 },
-  { name: "Sports", icon: Dumbbell, count: 3210 },
+  {
+    name: "Women",
+    icon: User,
+    count: 28450,
+    color: "#FF69B4",
+    bgColor: "from-pink-50 to-rose-50",
+  },
+  {
+    name: "Men",
+    icon: Users,
+    count: 19860,
+    color: "#4A90E2",
+    bgColor: "from-blue-50 to-indigo-50",
+  },
+  {
+    name: "Kids",
+    icon: Baby,
+    count: 15340,
+    color: "#FFD700",
+    bgColor: "from-yellow-50 to-amber-50",
+  },
+  {
+    name: "Brands",
+    icon: Crown,
+    count: 8920,
+    trend: true,
+    color: "#E67E22",
+    bgColor: "from-orange-50 to-amber-50",
+  },
+  {
+    name: "Sports",
+    icon: Activity,
+    count: 12670,
+    color: "#27AE60",
+    bgColor: "from-green-50 to-emerald-50",
+  },
+  {
+    name: "Trending",
+    icon: TrendingUp,
+    count: 34200,
+    trend: true,
+    color: "#E91E63",
+    bgColor: "from-red-50 to-pink-50",
+  },
+  {
+    name: "Sale",
+    icon: Tag,
+    count: 9540,
+    trend: true,
+    color: "#FF0000",
+    bgColor: "from-red-50 to-rose-50",
+  },
 ];
 
 // Animated counter component
@@ -89,14 +132,10 @@ const Categories = () => {
   };
 
   return (
-    <section className="py-8">
+    <section className="py-4 border-t border-border bg-background">
       <div className="container">
-        <h2 className="text-xl font-heading font-bold mb-5">
-          Catégories populaires
-        </h2>
         <motion.div
-          ref={scrollRef}
-          className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory"
+          className="flex gap-8 items-center overflow-x-auto pb-2 scrollbar-hide"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -105,41 +144,46 @@ const Categories = () => {
           {categories.map((cat) => (
             <motion.button
               key={cat.name}
-              className="flex flex-col items-center gap-2 min-w-[100px] p-4 rounded-2xl bg-secondary/5 hover:bg-secondary/15 border border-secondary/15 hover:border-secondary/30 transition-all duration-200 snap-start group cursor-pointer relative"
               variants={itemVariants}
-              whileHover={{ y: -8, boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}
+              className={`flex items-center gap-2 whitespace-nowrap py-3 px-2 font-semibold transition-all relative group ${
+                cat.name === "Sale"
+                  ? "text-destructive font-bold text-lg"
+                  : cat.trend
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+              }`}
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              {/* Badge "Nouveau" pour les tendances */}
-              {cat.trend && (
-                <motion.div
-                  className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-full"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 200 }}
-                >
-                  Tendance
-                </motion.div>
-              )}
-
+              {/* Icône */}
               <motion.div
-                className="w-12 h-12 rounded-xl bg-secondary/15 flex items-center justify-center group-hover:bg-secondary/25 transition-colors"
-                whileHover={{ scale: 1.15, rotate: 5 }}
+                className="flex items-center justify-center"
+                whileHover={{ rotate: 10, scale: 1.1 }}
               >
-                <cat.icon className="h-6 w-6 text-secondary group-hover:text-primary transition-colors" />
+                <cat.icon className="h-5 w-5" />
               </motion.div>
 
-              <span className="text-sm font-semibold text-foreground">
-                {cat.name}
-              </span>
+              {/* Texte */}
+              <span>{cat.name}</span>
 
-              {/* Animated counter */}
-              <motion.span
-                className="text-xs text-muted-foreground font-semibold"
-                initial={{ color: "var(--muted-foreground)" }}
-              >
-                <AnimatedCounter target={cat.count} isTrending={cat.trend} />
-              </motion.span>
+              {/* Indicateur tendance */}
+              {cat.trend && cat.name !== "Sale" && (
+                <motion.span
+                  className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-semibold"
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  HOT
+                </motion.span>
+              )}
+
+              {/* Underline au hover */}
+              <motion.div
+                className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-primary to-primary-hover"
+                initial={{ width: 0 }}
+                whileHover={{ width: "100%" }}
+                transition={{ duration: 0.3 }}
+              />
             </motion.button>
           ))}
         </motion.div>
