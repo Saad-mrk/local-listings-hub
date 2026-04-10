@@ -26,7 +26,7 @@ const AdCard = ({
 }: AdCardProps) => {
   const [liked, setLiked] = useState(false);
   const { addToCart } = useCart();
-  const { showNotification } = useNotification();
+  const { addNotification } = useNotification();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
