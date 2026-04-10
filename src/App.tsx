@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { UserProvider } from "@/contexts/UserContext";
 import { NotificationProvider } from "@/contexts/NotificationProvider";
+import { CartProvider } from "@/contexts/CartProvider";
 import Index from "./pages/Index.tsx";
 import AdDetails from "./pages/AdDetails.tsx";
 import Login from "./pages/Login.tsx";
@@ -14,6 +15,7 @@ import UserDashboard from "./pages/UserDashboard.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
 import Messages from "./pages/Messages.tsx";
 import Favorites from "./pages/Favorites.tsx";
+import Cart from "./pages/Cart.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Profile from "./pages/Profile.tsx";
 import Settings from "./pages/Settings.tsx";
@@ -32,6 +34,7 @@ const RoutesWrapper = () => {
       <Route path="/admin" element={<AdminDashboard />} />
       <Route path="/messages" element={<Messages />} />
       <Route path="/favorites" element={<Favorites />} />
+      <Route path="/cart" element={<Cart />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="*" element={<NotFound />} />
@@ -43,13 +46,15 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <NotificationProvider>
       <UserProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <RoutesWrapper />
-          </BrowserRouter>
-        </TooltipProvider>
+        <CartProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <RoutesWrapper />
+            </BrowserRouter>
+          </TooltipProvider>
+        </CartProvider>
       </UserProvider>
     </NotificationProvider>
   </QueryClientProvider>

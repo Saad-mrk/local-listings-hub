@@ -9,14 +9,12 @@ import {
   Trash2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import PageTransition from "@/components/PageTransition";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
 
 const mockFavorites = [
   {
@@ -127,7 +125,6 @@ const Favorites = () => {
       className="min-h-screen bg-background flex flex-col"
     >
       <Navbar />
-<<<<<<< HEAD
       <main className="flex-1 container py-8 max-w-5xl">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -263,188 +260,14 @@ const Favorites = () => {
                 <button
                   onClick={(e) => removeFavorite(ad.id, e)}
                   className="shrink-0 text-muted-foreground hover:text-destructive transition-colors p-2"
-=======
-      <PageTransition>
-        <main className="flex-1 container py-8 max-w-5xl">
-          <motion.div
-            className="flex items-center justify-between mb-6"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div>
-              <h1 className="text-2xl font-heading font-bold flex items-center gap-2">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 300, delay: 0.2 }}
->>>>>>> 2cc2c66b2de54444644995760956bab743639b21
                 >
-                  <Heart className="h-6 w-6 text-primary fill-primary" />
-                </motion.div>
-                Mes Favoris
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                <motion.span
-                  key={favorites.length}
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  {favorites.length} annonces sauvegardées
-                </motion.span>
-              </p>
-            </div>
-            <motion.div
-              className="flex gap-1 bg-muted rounded-xl p-1"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn("rounded-lg h-8 w-8 transition-all", viewMode === "grid" && "bg-card shadow-sm")}
-                onClick={() => setViewMode("grid")}
-              >
-                <Grid3X3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn("rounded-lg h-8 w-8 transition-all", viewMode === "list" && "bg-card shadow-sm")}
-                onClick={() => setViewMode("list")}
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </motion.div>
-          </motion.div>
-
-          {/* Search */}
-          <motion.div
-            className="relative mb-6"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.4 }}
-          >
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Rechercher dans vos favoris..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 rounded-xl bg-muted border-secondary/20"
-            />
-          </motion.div>
-
-          <AnimatePresence mode="popLayout">
-            {filtered.length === 0 ? (
-              <motion.div
-                key="empty"
-                className="text-center py-16"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-              >
-                <Heart className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <p className="text-muted-foreground">Aucun favori trouvé</p>
-              </motion.div>
-            ) : viewMode === "grid" ? (
-              <motion.div
-                key="grid"
-                className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
-                layout
-              >
-                <AnimatePresence mode="popLayout">
-                  {filtered.map((ad, i) => (
-                    <motion.div
-                      key={ad.id}
-                      layout
-                      variants={cardVariants}
-                      initial="hidden"
-                      animate="visible"
-                      exit="exit"
-                      custom={i}
-                    >
-                      <Link
-                        to={`/ad/${ad.id}`}
-                        className="group bg-card rounded-2xl border border-border overflow-hidden shadow-card hover:shadow-card-hover transition-all block"
-                      >
-                        <div className="relative overflow-hidden">
-                          <img
-                            src={ad.image}
-                            alt={ad.title}
-                            className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                          <motion.button
-                            onClick={(e) => removeFavorite(ad.id, e)}
-                            className="absolute top-3 right-3 bg-card/80 backdrop-blur-sm rounded-full p-2 hover:bg-destructive/10 transition-colors"
-                            whileHover={{ scale: 1.15 }}
-                            whileTap={{ scale: 0.9 }}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </motion.button>
-                          <span className="absolute bottom-3 left-3 bg-card/80 backdrop-blur-sm text-xs px-2.5 py-1 rounded-full font-medium">
-                            {ad.category}
-                          </span>
-                        </div>
-                        <div className="p-4">
-                          <h3 className="font-semibold text-sm truncate">{ad.title}</h3>
-                          <p className="text-primary font-bold mt-1">{ad.price.toLocaleString()} DH</p>
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">
-                            <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{ad.city}</span>
-                            <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{ad.date}</span>
-                          </div>
-                        </div>
-                      </Link>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </motion.div>
-            ) : (
-              <motion.div key="list" className="space-y-3" layout>
-                <AnimatePresence mode="popLayout">
-                  {filtered.map((ad, i) => (
-                    <motion.div
-                      key={ad.id}
-                      layout
-                      variants={cardVariants}
-                      initial="hidden"
-                      animate="visible"
-                      exit="exit"
-                      custom={i}
-                    >
-                      <Link
-                        to={`/ad/${ad.id}`}
-                        className="bg-card rounded-2xl border border-border p-4 shadow-card hover:shadow-card-hover transition-all flex items-center gap-4"
-                      >
-                        <img src={ad.image} alt={ad.title} className="w-24 h-20 rounded-xl object-cover shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-sm truncate">{ad.title}</h3>
-                            <span className="text-xs bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">{ad.category}</span>
-                          </div>
-                          <p className="text-primary font-bold text-sm mt-1">{ad.price.toLocaleString()} DH</p>
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                            <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{ad.city}</span>
-                            <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{ad.date}</span>
-                          </div>
-                        </div>
-                        <motion.button
-                          onClick={(e) => removeFavorite(ad.id, e)}
-                          className="shrink-0 text-muted-foreground hover:text-destructive transition-colors p-2"
-                          whileHover={{ scale: 1.2 }}
-                          whileTap={{ scale: 0.85 }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </motion.button>
-                      </Link>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </main>
-      </PageTransition>
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </Link>
+            ))}
+          </div>
+        )}
+      </main>
       <Footer />
     </motion.div>
   );

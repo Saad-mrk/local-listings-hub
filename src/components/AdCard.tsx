@@ -1,7 +1,9 @@
-import { Heart, MapPin } from "lucide-react";
+import { Heart, MapPin, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useCart } from "@/hooks/useCart";
+import { useNotification } from "@/hooks/useNotification";
 
 interface AdCardProps {
   id: string;
@@ -10,10 +12,27 @@ interface AdCardProps {
   city: string;
   image: string;
   date: string;
+  seller?: string;
 }
 
-const AdCard = ({ id, title, price, city, image, date }: AdCardProps) => {
+const AdCard = ({
+  id,
+  title,
+  price,
+  city,
+  image,
+  date,
+  seller = "Vendeur",
+}: AdCardProps) => {
   const [liked, setLiked] = useState(false);
+  const { addToCart } = useCart();
+  const { showNotification } = useNotification();
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    addToCart(id, title, price, image, seller);
+    showNotification("Le produit a été ajouté au panier", "success");
+  };
 
   return (
     <motion.div
@@ -53,6 +72,16 @@ const AdCard = ({ id, title, price, city, image, date }: AdCardProps) => {
             <h3 className="text-sm font-medium text-foreground mt-1 line-clamp-2 leading-snug">
               {title}
             </h3>
+
+            {/* Add to Cart Button */}
+            <button
+              onClick={handleAddToCart}
+              className="w-full mt-3 bg-add-to-cart text-white font-medium py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 transform hover:scale-105"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              <span>Ajouter au panier</span>
+            </button>
+
             <div className="flex items-center gap-1 mt-3 text-xs text-muted-foreground">
               <MapPin className="h-3.5 w-3.5" />
               <span>{city}</span>

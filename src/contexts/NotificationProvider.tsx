@@ -3,7 +3,7 @@ import {
   NotificationContext,
   Notification,
   NotificationContextType,
-} from "./NotificationContext.tsx";
+} from "./NotificationContext";
 
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<Notification[]>([

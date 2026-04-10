@@ -4,6 +4,7 @@ import {
   User,
   Heart,
   MessageCircle,
+  ShoppingCart,
   LayoutDashboard,
   LogOut,
   Settings,
@@ -24,11 +25,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useUser } from "@/hooks/useUser";
+import { useCart } from "@/hooks/useCart";
 import NotificationDropdown from "./NotificationDropdown";
 import Categories from "./Categories";
 
 const Navbar = () => {
   const { user, logout } = useUser();
+  const { totalItems } = useCart();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -62,6 +65,39 @@ const Navbar = () => {
           {/* Actions */}
           <div className="flex items-center gap-2">
             <NotificationDropdown />
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link to="/cart" className="hidden sm:flex">
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      transition={{ duration: 0.2 }}
+                      className="relative"
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-primary hover:bg-secondary/10"
+                      >
+                        <ShoppingCart className="h-5 w-5" />
+                      </Button>
+                      {totalItems > 0 && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="absolute -top-1 -right-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center"
+                        >
+                          {totalItems}
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>Panier</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
