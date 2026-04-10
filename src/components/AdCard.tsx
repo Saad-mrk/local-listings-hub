@@ -31,7 +31,7 @@ const AdCard = ({
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     addToCart(id, title, price, image, seller);
-    showNotification("Le produit a été ajouté au panier", "success");
+    addNotification("Panier", "Le produit a été ajouté au panier", "success");
   };
 
   return (
