@@ -8,7 +8,10 @@ import {
   LayoutDashboard,
   LogOut,
   Settings,
+  Moon,
+  Sun,
 } from "lucide-react";
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -28,6 +31,48 @@ import { useUser } from "@/hooks/useUser";
 import { useCart } from "@/hooks/useCart";
 import NotificationDropdown from "./NotificationDropdown";
 import Categories from "./Categories";
+
+const DarkModeToggle = () => {
+  const [isDark, setIsDark] = React.useState(() =>
+    document.documentElement.classList.contains("dark")
+  );
+
+  const toggle = () => {
+    const next = !isDark;
+    setIsDark(next);
+    document.documentElement.classList.toggle("dark", next);
+    localStorage.setItem("theme", next ? "dark" : "light");
+  };
+
+  React.useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const shouldBeDark = saved === "dark" || (!saved && prefersDark);
+    setIsDark(shouldBeDark);
+    document.documentElement.classList.toggle("dark", shouldBeDark);
+  }, []);
+
+  return (
+    <motion.div whileHover={{ scale: 1.1 }} transition={{ duration: 0.2 }}>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={toggle}
+        className="text-muted-foreground hover:text-primary hover:bg-secondary/10"
+      >
+        <motion.div
+          key={isDark ? "moon" : "sun"}
+          initial={{ rotate: -90, opacity: 0 }}
+          animate={{ rotate: 0, opacity: 1 }}
+          exit={{ rotate: 90, opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+        </motion.div>
+      </Button>
+    </motion.div>
+  );
+};
 
 const Navbar = () => {
   const { user, logout } = useUser();
@@ -64,6 +109,7 @@ const Navbar = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
+            <DarkModeToggle />
             <NotificationDropdown />
 
             <TooltipProvider>
