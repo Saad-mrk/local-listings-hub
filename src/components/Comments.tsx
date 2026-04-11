@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import StarRating from "./StarRating";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Comment {
   id: string;
@@ -18,16 +19,15 @@ const mockComments: Comment[] = [
 ];
 
 const Comments = () => {
+  const { t } = useLanguage();
   const [comments] = useState<Comment[]>(mockComments);
   const [newComment, setNewComment] = useState("");
 
   return (
     <div className="bg-card rounded-2xl border border-border p-5 shadow-card">
       <h3 className="font-heading font-semibold mb-4">
-        Avis ({comments.length})
+        {t("reviews")} ({comments.length})
       </h3>
-
-      {/* Comment list */}
       <div className="space-y-4 mb-5">
         {comments.map((comment) => (
           <div key={comment.id} className="border-b border-secondary/20 pb-4 last:border-0 last:pb-0">
@@ -45,16 +45,8 @@ const Comments = () => {
           </div>
         ))}
       </div>
-
-      {/* Add comment */}
       <div className="flex gap-2">
-        <input
-          type="text"
-          placeholder="Laisser un avis..."
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          className="flex-1 h-10 px-4 rounded-xl bg-muted/50 border border-secondary/20 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-shadow"
-        />
+        <input type="text" placeholder={t("leave_review")} value={newComment} onChange={(e) => setNewComment(e.target.value)} className="flex-1 h-10 px-4 rounded-xl bg-muted/50 border border-secondary/20 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-shadow" />
         <Button size="icon" className="h-10 w-10 rounded-xl bg-primary hover:bg-primary-hover text-primary-foreground">
           <Send className="h-4 w-4" />
         </Button>
