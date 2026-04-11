@@ -29,7 +29,9 @@ import {
 } from "@/components/ui/tooltip";
 import { useUser } from "@/hooks/useUser";
 import { useCart } from "@/hooks/useCart";
+import { useLanguage } from "@/contexts/LanguageContext";
 import NotificationDropdown from "./NotificationDropdown";
+import LanguageSwitcher from "./LanguageSwitcher";
 import Categories from "./Categories";
 
 const DarkModeToggle = () => {
@@ -77,6 +79,7 @@ const DarkModeToggle = () => {
 const Navbar = () => {
   const { user, logout } = useUser();
   const { totalItems } = useCart();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -101,7 +104,7 @@ const Navbar = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Rechercher sur LBAL..."
+                placeholder={t("search_placeholder")}
                 className="w-full h-10 pl-10 pr-4 rounded-xl bg-muted border border-secondary/20 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-secondary/40 transition-shadow"
               />
             </div>
@@ -109,6 +112,7 @@ const Navbar = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
+            <LanguageSwitcher />
             <DarkModeToggle />
             <NotificationDropdown />
 
@@ -140,7 +144,7 @@ const Navbar = () => {
                     </motion.div>
                   </Link>
                 </TooltipTrigger>
-                <TooltipContent>Panier</TooltipContent>
+                <TooltipContent>{t("cart")}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
 
@@ -162,7 +166,7 @@ const Navbar = () => {
                     </motion.div>
                   </Link>
                 </TooltipTrigger>
-                <TooltipContent>Mes favoris</TooltipContent>
+                <TooltipContent>{t("favorites")}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
 
@@ -184,7 +188,7 @@ const Navbar = () => {
                     </motion.div>
                   </Link>
                 </TooltipTrigger>
-                <TooltipContent>Messages</TooltipContent>
+                <TooltipContent>{t("messages")}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
 
@@ -195,7 +199,7 @@ const Navbar = () => {
               <Link to="/create">
                 <Button className="bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl gap-2 font-semibold">
                   <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Publier</span>
+                  <span className="hidden sm:inline">{t("publish")}</span>
                 </Button>
               </Link>
             </motion.div>
@@ -221,7 +225,7 @@ const Navbar = () => {
                         </motion.div>
                       </Link>
                     </TooltipTrigger>
-                    <TooltipContent>Tableau de bord</TooltipContent>
+                    <TooltipContent>{t("dashboard")}</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
 
@@ -245,23 +249,23 @@ const Navbar = () => {
                       disabled
                       className="font-semibold text-sm"
                     >
-                      Bonjour, {user.name}
+                      {t("hello")}, {user.name}
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link to="/profile" className="cursor-pointer">
                         <User className="mr-2 h-4 w-4" />
-                        Profil
+                        {t("profile")}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link to="/settings" className="cursor-pointer">
                         <Settings className="mr-2 h-4 w-4" />
-                        Paramètres
+                        {t("settings")}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />
-                      Se déconnecter
+                      {t("logout")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -274,7 +278,7 @@ const Navbar = () => {
                 <Link to="/login">
                   <Button className="bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl font-semibold">
                     <User className="mr-2 h-4 w-4" />
-                    Se connecter
+                    {t("login")}
                   </Button>
                 </Link>
               </motion.div>

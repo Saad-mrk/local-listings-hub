@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { UserProvider } from "@/contexts/UserContext";
 import { NotificationProvider } from "@/contexts/NotificationProvider";
 import { CartProvider } from "@/contexts/CartProvider";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index.tsx";
 import AdDetails from "./pages/AdDetails.tsx";
 import Login from "./pages/Login.tsx";
@@ -44,19 +45,21 @@ const RoutesWrapper = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <NotificationProvider>
-      <UserProvider>
-        <CartProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <RoutesWrapper />
-            </BrowserRouter>
-          </TooltipProvider>
-        </CartProvider>
-      </UserProvider>
-    </NotificationProvider>
+    <LanguageProvider>
+      <NotificationProvider>
+        <UserProvider>
+          <CartProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <RoutesWrapper />
+              </BrowserRouter>
+            </TooltipProvider>
+          </CartProvider>
+        </UserProvider>
+      </NotificationProvider>
+    </LanguageProvider>
   </QueryClientProvider>
 );
 
