@@ -60,6 +60,15 @@ const HeroSearch = () => {
         initial="hidden"
         animate="visible"
       >
+        {/* App name */}
+        <motion.div
+          className="font-heading font-extrabold tracking-widest text-primary text-7xl md:text-9xl mb-6 animate-pulse"
+          variants={itemVariants}
+          whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
+        >
+          LBAL
+        </motion.div>
+
         {/* Typing animation heading */}
         <motion.h1
           className="text-3xl md:text-5xl font-heading font-extrabold tracking-tight mb-3 h-[60px] md:h-[70px] flex items-center justify-center"

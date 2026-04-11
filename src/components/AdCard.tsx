@@ -1,5 +1,5 @@
 import { Heart, MapPin, ShoppingCart } from "lucide-react";
-import { useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useCart } from "@/hooks/useCart";
@@ -28,11 +28,19 @@ const AdCard = ({
   const { addToCart } = useCart();
   const { addNotification } = useNotification();
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      addToCart(id, title, price, image, seller);
+      addNotification("Panier", "Le produit a été ajouté au panier", "success");
+    },
+    [addNotification, addToCart, id, image, price, seller, title],
+  );
+
+  const handleToggleLiked = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
-    addToCart(id, title, price, image, seller);
-    addNotification("Panier", "Le produit a été ajouté au panier", "success");
-  };
+    setLiked((v) => !v);
+  }, []);
 
   return (
     <motion.div
@@ -52,10 +60,7 @@ const AdCard = ({
               loading="lazy"
             />
             <button
-              onClick={(e) => {
-                e.preventDefault();
-                setLiked(!liked);
-              }}
+              onClick={handleToggleLiked}
               className="absolute top-3 right-3 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
             >
               <Heart
@@ -95,4 +100,4 @@ const AdCard = ({
   );
 };
 
-export default AdCard;
+export default memo(AdCard);

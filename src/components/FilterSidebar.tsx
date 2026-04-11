@@ -1,3 +1,4 @@
+import { memo, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, SlidersHorizontal, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -91,25 +92,39 @@ const FilterSidebar = ({
   onFiltersChange,
   activeFilterCount,
 }: FilterSidebarProps) => {
-  const handlePriceChange = (value: number[]) => {
-    onFiltersChange({ ...filters, priceRange: [value[0], value[1]] });
-  };
+  const presets = useMemo(() => [5000, 20000, 100000, 500000], []);
 
-  const toggleCategory = (cat: string) => {
-    const updated = filters.categories.includes(cat)
-      ? filters.categories.filter((c) => c !== cat)
-      : [...filters.categories, cat];
-    onFiltersChange({ ...filters, categories: updated });
-  };
+  const handlePriceChange = useCallback(
+    (value: number[]) => {
+      onFiltersChange({
+        ...filters,
+        priceRange: [value[0], value[1]] as [number, number],
+      });
+    },
+    [filters, onFiltersChange],
+  );
 
-  const toggleCity = (city: string) => {
-    const updated = filters.cities.includes(city)
-      ? filters.cities.filter((c) => c !== city)
-      : [...filters.cities, city];
-    onFiltersChange({ ...filters, cities: updated });
-  };
+  const toggleCategory = useCallback(
+    (cat: string) => {
+      const updated = filters.categories.includes(cat)
+        ? filters.categories.filter((c) => c !== cat)
+        : [...filters.categories, cat];
+      onFiltersChange({ ...filters, categories: updated });
+    },
+    [filters, onFiltersChange],
+  );
 
-  const resetFilters = () => {
+  const toggleCity = useCallback(
+    (city: string) => {
+      const updated = filters.cities.includes(city)
+        ? filters.cities.filter((c) => c !== city)
+        : [...filters.cities, city];
+      onFiltersChange({ ...filters, cities: updated });
+    },
+    [filters, onFiltersChange],
+  );
+
+  const resetFilters = useCallback(() => {
     onFiltersChange({
       priceRange: [0, 1000000],
       categories: [],
@@ -117,7 +132,7 @@ const FilterSidebar = ({
       dateFrom: undefined,
       dateTo: undefined,
     });
-  };
+  }, [onFiltersChange]);
 
   const formatPrice = (v: number) =>
     v >= 1000000
@@ -204,7 +219,7 @@ const FilterSidebar = ({
                   className="mt-1"
                 />
                 <div className="flex gap-2 mt-3">
-                  {[5000, 20000, 100000, 500000].map((preset) => (
+                  {presets.map((preset) => (
                     <motion.button
                       key={preset}
                       whileHover={{ scale: 1.05 }}
@@ -219,7 +234,7 @@ const FilterSidebar = ({
                         "text-xs px-2 py-1 rounded-full border border-border transition-colors",
                         filters.priceRange[1] === preset
                           ? "bg-primary text-primary-foreground border-primary"
-                          : "hover:border-primary/50"
+                          : "hover:border-primary/50",
                       )}
                     >
                       {formatPrice(preset)}
@@ -283,7 +298,7 @@ const FilterSidebar = ({
                         "text-xs px-3 py-1.5 rounded-full border transition-all",
                         filters.cities.includes(city)
                           ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                          : "border-border hover:border-primary/50 hover:bg-accent"
+                          : "border-border hover:border-primary/50 hover:bg-accent",
                       )}
                     >
                       {city}
@@ -311,7 +326,7 @@ const FilterSidebar = ({
                         variant="outline"
                         className={cn(
                           "w-full justify-start text-left text-sm font-normal",
-                          !filters.dateFrom && "text-muted-foreground"
+                          !filters.dateFrom && "text-muted-foreground",
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
@@ -341,7 +356,7 @@ const FilterSidebar = ({
                         variant="outline"
                         className={cn(
                           "w-full justify-start text-left text-sm font-normal",
-                          !filters.dateTo && "text-muted-foreground"
+                          !filters.dateTo && "text-muted-foreground",
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
@@ -388,4 +403,4 @@ const FilterSidebar = ({
   );
 };
 
-export default FilterSidebar;
+export default memo(FilterSidebar);

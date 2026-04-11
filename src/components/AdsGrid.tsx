@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import AdCard from "./AdCard";
 import FilterSidebar, { type Filters } from "./FilterSidebar";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,14 +7,78 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 const mockAds = [
-  { id: "1", title: "iPhone 15 Pro Max 256GB - Comme neuf", price: 12500, city: "Casablanca", image: "https://picsum.photos/600/450?random=5", date: "Aujourd'hui", category: "Électronique" },
-  { id: "2", title: "Appartement 3 chambres - Hay Riad", price: 850000, city: "Rabat", image: "https://picsum.photos/600/450?random=6", date: "Hier", category: "Immobilier" },
-  { id: "3", title: "Mercedes Classe C 220d - 2021", price: 295000, city: "Marrakech", image: "https://picsum.photos/600/450?random=7", date: "Hier", category: "Véhicules" },
-  { id: "4", title: "MacBook Pro M2 14 pouces", price: 18000, city: "Fès", image: "https://picsum.photos/600/450?random=8", date: "Il y a 2 jours", category: "Électronique" },
-  { id: "5", title: "Canapé moderne en cuir - Excellent état", price: 4500, city: "Tanger", image: "https://picsum.photos/600/450?random=9", date: "Il y a 3 jours", category: "Mobilier" },
-  { id: "6", title: "Samsung Galaxy S24 Ultra", price: 9800, city: "Agadir", image: "https://picsum.photos/600/450?random=10", date: "Il y a 3 jours", category: "Électronique" },
-  { id: "7", title: "Vélo électrique pliable - Neuf", price: 3200, city: "Casablanca", image: "https://picsum.photos/600/450?random=11", date: "Il y a 4 jours", category: "Sports" },
-  { id: "8", title: "Table à manger en bois massif", price: 2800, city: "Rabat", image: "https://picsum.photos/600/450?random=12", date: "Il y a 5 jours", category: "Mobilier" },
+  {
+    id: "1",
+    title: "iPhone 15 Pro Max 256GB - Comme neuf",
+    price: 12500,
+    city: "Casablanca",
+    image: "https://picsum.photos/600/450?random=5",
+    date: "Aujourd'hui",
+    category: "Électronique",
+  },
+  {
+    id: "2",
+    title: "Appartement 3 chambres - Hay Riad",
+    price: 850000,
+    city: "Rabat",
+    image: "https://picsum.photos/600/450?random=6",
+    date: "Hier",
+    category: "Immobilier",
+  },
+  {
+    id: "3",
+    title: "Mercedes Classe C 220d - 2021",
+    price: 295000,
+    city: "Marrakech",
+    image: "https://picsum.photos/600/450?random=7",
+    date: "Hier",
+    category: "Véhicules",
+  },
+  {
+    id: "4",
+    title: "MacBook Pro M2 14 pouces",
+    price: 18000,
+    city: "Fès",
+    image: "https://picsum.photos/600/450?random=8",
+    date: "Il y a 2 jours",
+    category: "Électronique",
+  },
+  {
+    id: "5",
+    title: "Canapé moderne en cuir - Excellent état",
+    price: 4500,
+    city: "Tanger",
+    image: "https://picsum.photos/600/450?random=9",
+    date: "Il y a 3 jours",
+    category: "Mobilier",
+  },
+  {
+    id: "6",
+    title: "Samsung Galaxy S24 Ultra",
+    price: 9800,
+    city: "Agadir",
+    image: "https://picsum.photos/600/450?random=10",
+    date: "Il y a 3 jours",
+    category: "Électronique",
+  },
+  {
+    id: "7",
+    title: "Vélo électrique pliable - Neuf",
+    price: 3200,
+    city: "Casablanca",
+    image: "https://picsum.photos/600/450?random=11",
+    date: "Il y a 4 jours",
+    category: "Sports",
+  },
+  {
+    id: "8",
+    title: "Table à manger en bois massif",
+    price: 2800,
+    city: "Rabat",
+    image: "https://picsum.photos/600/450?random=12",
+    date: "Il y a 5 jours",
+    category: "Mobilier",
+  },
 ];
 
 const defaultFilters: Filters = {
@@ -42,6 +106,10 @@ const AdsGrid = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filters, setFilters] = useState<Filters>(defaultFilters);
 
+  const openSidebar = useCallback(() => setSidebarOpen(true), []);
+  const closeSidebar = useCallback(() => setSidebarOpen(false), []);
+  const clearAllFilters = useCallback(() => setFilters(defaultFilters), []);
+
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (filters.priceRange[0] > 0 || filters.priceRange[1] < 1000000) count++;
@@ -54,9 +122,15 @@ const AdsGrid = () => {
 
   const filteredAds = useMemo(() => {
     return mockAds.filter((ad) => {
-      if (ad.price < filters.priceRange[0] || ad.price > filters.priceRange[1]) return false;
-      if (filters.categories.length > 0 && !filters.categories.includes(ad.category)) return false;
-      if (filters.cities.length > 0 && !filters.cities.includes(ad.city)) return false;
+      if (ad.price < filters.priceRange[0] || ad.price > filters.priceRange[1])
+        return false;
+      if (
+        filters.categories.length > 0 &&
+        !filters.categories.includes(ad.category)
+      )
+        return false;
+      if (filters.cities.length > 0 && !filters.cities.includes(ad.city))
+        return false;
       return true;
     });
   }, [filters]);
@@ -72,14 +146,22 @@ const AdsGrid = () => {
     filters.categories.forEach((cat) =>
       chips.push({
         label: cat,
-        onRemove: () => setFilters((f) => ({ ...f, categories: f.categories.filter((c) => c !== cat) })),
-      })
+        onRemove: () =>
+          setFilters((f) => ({
+            ...f,
+            categories: f.categories.filter((c) => c !== cat),
+          })),
+      }),
     );
     filters.cities.forEach((city) =>
       chips.push({
         label: city,
-        onRemove: () => setFilters((f) => ({ ...f, cities: f.cities.filter((c) => c !== city) })),
-      })
+        onRemove: () =>
+          setFilters((f) => ({
+            ...f,
+            cities: f.cities.filter((c) => c !== city),
+          })),
+      }),
     );
     return chips;
   }, [filters]);
@@ -100,7 +182,7 @@ const AdsGrid = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setSidebarOpen(true)}
+                onClick={openSidebar}
                 className="gap-2"
               >
                 <SlidersHorizontal className="h-4 w-4" />
@@ -139,14 +221,17 @@ const AdsGrid = () => {
                   className="inline-flex items-center gap-1 text-xs bg-accent text-accent-foreground px-3 py-1.5 rounded-full border border-border"
                 >
                   {chip.label}
-                  <button onClick={chip.onRemove} className="ml-1 hover:text-destructive transition-colors">
+                  <button
+                    onClick={chip.onRemove}
+                    className="ml-1 hover:text-destructive transition-colors"
+                  >
                     <X className="h-3 w-3" />
                   </button>
                 </motion.span>
               ))}
               <motion.button
                 whileHover={{ scale: 1.05 }}
-                onClick={() => setFilters(defaultFilters)}
+                onClick={clearAllFilters}
                 className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
               >
                 Tout effacer
@@ -159,7 +244,7 @@ const AdsGrid = () => {
           {/* Sidebar */}
           <FilterSidebar
             isOpen={sidebarOpen}
-            onClose={() => setSidebarOpen(false)}
+            onClose={closeSidebar}
             filters={filters}
             onFiltersChange={setFilters}
             activeFilterCount={activeFilterCount}
@@ -190,11 +275,13 @@ const AdsGrid = () => {
                   exit={{ opacity: 0, y: -20 }}
                   className="text-center py-16"
                 >
-                  <p className="text-muted-foreground text-lg mb-2">Aucune annonce trouvée</p>
+                  <p className="text-muted-foreground text-lg mb-2">
+                    Aucune annonce trouvée
+                  </p>
                   <p className="text-sm text-muted-foreground mb-4">
                     Essayez de modifier vos critères de recherche
                   </p>
-                  <Button variant="outline" onClick={() => setFilters(defaultFilters)}>
+                  <Button variant="outline" onClick={clearAllFilters}>
                     Réinitialiser les filtres
                   </Button>
                 </motion.div>
