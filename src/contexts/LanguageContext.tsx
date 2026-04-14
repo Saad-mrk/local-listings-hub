@@ -158,6 +158,75 @@ const translations: Translations = {
   "cat_sports": { fr: "Sports", en: "Sports", ar: "رياضة" },
   "cat_jobs": { fr: "Emploi", en: "Jobs", ar: "وظائف" },
   "cat_trending": { fr: "Tendances", en: "Trending", ar: "رائج" },
+
+  // Login
+  "login_title": { fr: "Connectez-vous à votre compte", en: "Log in to your account", ar: "تسجيل الدخول إلى حسابك" },
+  "register_title": { fr: "Créer un nouveau compte", en: "Create a new account", ar: "إنشاء حساب جديد" },
+  "full_name": { fr: "Nom complet", en: "Full name", ar: "الاسم الكامل" },
+  "your_name": { fr: "Votre nom", en: "Your name", ar: "اسمك" },
+  "email": { fr: "Email", en: "Email", ar: "البريد الإلكتروني" },
+  "password": { fr: "Mot de passe", en: "Password", ar: "كلمة المرور" },
+  "sign_in": { fr: "Se connecter", en: "Log in", ar: "تسجيل الدخول" },
+  "sign_up": { fr: "S'inscrire", en: "Sign up", ar: "إنشاء حساب" },
+  "already_have_account": { fr: "Déjà un compte ?", en: "Already have an account?", ar: "لديك حساب بالفعل؟" },
+  "no_account": { fr: "Pas encore de compte ?", en: "Don't have an account?", ar: "ليس لديك حساب؟" },
+  "fill_all_fields": { fr: "Veuillez remplir tous les champs", en: "Please fill in all fields", ar: "يرجى ملء جميع الحقول" },
+  "invalid_email": { fr: "Veuillez entrer un email valide", en: "Please enter a valid email", ar: "يرجى إدخال بريد إلكتروني صالح" },
+  "password_min": { fr: "Le mot de passe doit contenir au moins 6 caractères", en: "Password must be at least 6 characters", ar: "يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل" },
+  "verification_note": { fr: "Lors de l'inscription, vous recevrez un code de vérification par email.", en: "Upon registration, you will receive a verification code by email.", ar: "عند التسجيل، ستتلقى رمز التحقق عبر البريد الإلكتروني." },
+
+  // Profile
+  "my_profile": { fr: "Mon Profil", en: "My Profile", ar: "ملفي الشخصي" },
+  "back_to_home": { fr: "Retour", en: "Back", ar: "رجوع" },
+  "name": { fr: "Nom", en: "Name", ar: "الاسم" },
+  "edit_settings": { fr: "Modifier les paramètres", en: "Edit settings", ar: "تعديل الإعدادات" },
+
+  // Settings
+  "settings_title": { fr: "Paramètres", en: "Settings", ar: "الإعدادات" },
+  "back_to_profile": { fr: "Retour au profil", en: "Back to profile", ar: "العودة إلى الملف الشخصي" },
+  "email_no_edit": { fr: "L'email ne peut pas être modifié", en: "Email cannot be changed", ar: "لا يمكن تغيير البريد الإلكتروني" },
+  "save_changes": { fr: "Enregistrer les modifications", en: "Save changes", ar: "حفظ التغييرات" },
+  "cancel": { fr: "Annuler", en: "Cancel", ar: "إلغاء" },
+  "settings_saved": { fr: "Paramètres sauvegardés avec succès!", en: "Settings saved successfully!", ar: "تم حفظ الإعدادات بنجاح!" },
+
+  // Messages
+  "messages_title": { fr: "Messages", en: "Messages", ar: "الرسائل" },
+  "search_messages": { fr: "Rechercher...", en: "Search...", ar: "بحث..." },
+  "write_message": { fr: "Écrire un message...", en: "Write a message...", ar: "اكتب رسالة..." },
+  "select_conversation": { fr: "Sélectionnez une conversation", en: "Select a conversation", ar: "اختر محادثة" },
+
+  // Favorites
+  "my_favorites": { fr: "Mes Favoris", en: "My Favorites", ar: "مفضلاتي" },
+  "saved_ads": { fr: "annonces sauvegardées", en: "saved ads", ar: "إعلانات محفوظة" },
+  "search_favorites": { fr: "Rechercher dans vos favoris...", en: "Search your favorites...", ar: "ابحث في مفضلاتك..." },
+  "no_favorites": { fr: "Aucun favori trouvé", en: "No favorites found", ar: "لم يتم العثور على مفضلات" },
+
+  // Create Ad
+  "create_ad_title": { fr: "Publier une annonce", en: "Publish an ad", ar: "نشر إعلان" },
+  "photos_max": { fr: "Photos (max 6)", en: "Photos (max 6)", ar: "صور (بحد أقصى 6)" },
+  "add_photo": { fr: "Ajouter", en: "Add", ar: "إضافة" },
+  "title": { fr: "Titre", en: "Title", ar: "العنوان" },
+  "title_placeholder": { fr: "Ex: iPhone 15 Pro Max", en: "E.g.: iPhone 15 Pro Max", ar: "مثال: iPhone 15 Pro Max" },
+  "description_label": { fr: "Description", en: "Description", ar: "الوصف" },
+  "description_placeholder": { fr: "Décrivez votre article...", en: "Describe your item...", ar: "صف منتجك..." },
+  "price_dh": { fr: "Prix (DH)", en: "Price (DH)", ar: "السعر (درهم)" },
+  "category": { fr: "Catégorie", en: "Category", ar: "الفئة" },
+  "choose": { fr: "Choisir", en: "Choose", ar: "اختر" },
+  "city": { fr: "Ville", en: "City", ar: "المدينة" },
+  "publish_ad": { fr: "Publier l'annonce", en: "Publish ad", ar: "نشر الإعلان" },
+
+  // User Dashboard
+  "my_ads": { fr: "Mes annonces", en: "My ads", ar: "إعلاناتي" },
+  "edit": { fr: "Modifier", en: "Edit", ar: "تعديل" },
+  "member_since": { fr: "Membre depuis", en: "Member since", ar: "عضو منذ" },
+  "sold": { fr: "Vendu", en: "Sold", ar: "مُباع" },
+
+  // NotFound
+  "page_not_found": { fr: "Oops! Page introuvable", en: "Oops! Page not found", ar: "عذراً! الصفحة غير موجودة" },
+  "return_home": { fr: "Retour à l'accueil", en: "Return to Home", ar: "العودة للرئيسية" },
+
+  // Verify Email
+  "verify_email_title": { fr: "Vérification de l'email", en: "Email Verification", ar: "التحقق من البريد الإلكتروني" },
 };
 
 interface LanguageContextType {
