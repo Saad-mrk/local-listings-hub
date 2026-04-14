@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useUser } from "@/hooks/useUser";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
@@ -12,6 +13,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { login, registerAndSendCode } = useUser();
+  const { t } = useLanguage();
 
   const validateEmail = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -20,49 +22,24 @@ const Login = () => {
 
   const handleLogin = () => {
     setError("");
-
-    if (!email || !password) {
-      setError("Veuillez remplir tous les champs");
-      return;
-    }
-
-    if (!validateEmail(email)) {
-      setError("Veuillez entrer un email valide");
-      return;
-    }
-
+    if (!email || !password) { setError(t("fill_all_fields")); return; }
+    if (!validateEmail(email)) { setError(t("invalid_email")); return; }
     login(email, email.split("@")[0]);
     navigate("/");
   };
 
   const handleRegister = () => {
     setError("");
-
-    if (!email || !password || !name) {
-      setError("Veuillez remplir tous les champs");
-      return;
-    }
-
-    if (!validateEmail(email)) {
-      setError("Veuillez entrer un email valide");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("Le mot de passe doit contenir au moins 6 caractères");
-      return;
-    }
-
+    if (!email || !password || !name) { setError(t("fill_all_fields")); return; }
+    if (!validateEmail(email)) { setError(t("invalid_email")); return; }
+    if (password.length < 6) { setError(t("password_min")); return; }
     registerAndSendCode(email, name);
     navigate("/verify-email", { state: { email } });
   };
 
   const handleSubmit = () => {
-    if (isRegister) {
-      handleRegister();
-    } else {
-      handleLogin();
-    }
+    if (isRegister) handleRegister();
+    else handleLogin();
   };
 
   return (
@@ -76,14 +53,10 @@ const Login = () => {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <Link to="/">
-            <span className="text-3xl font-heading font-extrabold text-primary">
-              LBAL
-            </span>
+            <span className="text-3xl font-heading font-extrabold text-primary">LBAL</span>
           </Link>
           <p className="text-muted-foreground text-sm mt-2">
-            {isRegister
-              ? "Créer un nouveau compte"
-              : "Connectez-vous à votre compte"}
+            {isRegister ? t("register_title") : t("login_title")}
           </p>
         </div>
 
@@ -96,69 +69,37 @@ const Login = () => {
 
           {isRegister && (
             <div>
-              <label className="text-sm font-medium mb-1.5 block">
-                Nom complet
-              </label>
-              <input
-                type="text"
-                placeholder="Votre nom"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-              />
+              <label className="text-sm font-medium mb-1.5 block">{t("full_name")}</label>
+              <input type="text" placeholder={t("your_name")} value={name} onChange={(e) => setName(e.target.value)}
+                className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
             </div>
           )}
           <div>
-            <label className="text-sm font-medium mb-1.5 block">Email</label>
-            <input
-              type="email"
-              placeholder="votre@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
+            <label className="text-sm font-medium mb-1.5 block">{t("email")}</label>
+            <input type="email" placeholder="votre@email.com" value={email} onChange={(e) => setEmail(e.target.value)}
+              className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
           </div>
           <div>
-            <label className="text-sm font-medium mb-1.5 block">
-              Mot de passe
-            </label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
+            <label className="text-sm font-medium mb-1.5 block">{t("password")}</label>
+            <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)}
+              className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
           </div>
 
           {isRegister && (
-            <p className="text-xs text-muted-foreground">
-              Lors de l'inscription, vous recevrez un code de vérification par
-              email.
-            </p>
+            <p className="text-xs text-muted-foreground">{t("verification_note")}</p>
           )}
 
-          <Button
-            onClick={handleSubmit}
-            className="w-full h-11 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl font-semibold"
-          >
-            {isRegister ? "S'inscrire" : "Se connecter"}
+          <Button onClick={handleSubmit}
+            className="w-full h-11 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl font-semibold">
+            {isRegister ? t("sign_up") : t("sign_in")}
           </Button>
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-5">
-          {isRegister ? "Déjà un compte ?" : "Pas encore de compte ?"}{" "}
-          <button
-            onClick={() => {
-              setIsRegister(!isRegister);
-              setError("");
-              setEmail("");
-              setPassword("");
-              setName("");
-            }}
-            className="text-primary font-semibold hover:underline"
-          >
-            {isRegister ? "Se connecter" : "S'inscrire"}
+          {isRegister ? t("already_have_account") : t("no_account")}{" "}
+          <button onClick={() => { setIsRegister(!isRegister); setError(""); setEmail(""); setPassword(""); setName(""); }}
+            className="text-primary font-semibold hover:underline">
+            {isRegister ? t("sign_in") : t("sign_up")}
           </button>
         </p>
       </div>
