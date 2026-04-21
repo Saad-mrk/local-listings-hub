@@ -10,6 +10,7 @@ import {
   Settings,
   Moon,
   Sun,
+  ChevronDown,
 } from "lucide-react";
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -21,12 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useUser } from "@/hooks/useUser";
 import { useCart } from "@/hooks/useCart";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -36,7 +32,7 @@ import Categories from "./Categories";
 
 const DarkModeToggle = () => {
   const [isDark, setIsDark] = React.useState(() =>
-    document.documentElement.classList.contains("dark")
+    document.documentElement.classList.contains("dark"),
   );
 
   const toggle = () => {
@@ -81,11 +77,15 @@ const Navbar = () => {
   const { totalItems } = useCart();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const [searchType, setSearchType] = React.useState<"ads" | "members">("members");
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
+
+  const searchPlaceholder =
+    searchType === "members" ? t("search_members_placeholder") : t("search_ads_placeholder");
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg">
@@ -100,13 +100,36 @@ const Navbar = () => {
 
           {/* Mini search */}
           <div className="hidden md:flex items-center flex-1 max-w-md mx-4">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder={t("search_placeholder")}
-                className="w-full h-10 pl-10 pr-4 rounded-xl bg-muted border border-secondary/20 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-secondary/40 transition-shadow"
-              />
+            <div className="flex w-full h-10 rounded-xl bg-muted border border-secondary/20 overflow-hidden focus-within:ring-2 focus-within:ring-secondary/40 transition-shadow">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="h-full px-4 text-sm font-medium text-foreground border-r border-secondary/20 hover:bg-background/40 transition-colors flex items-center gap-1.5"
+                  >
+                    {searchType === "members" ? t("search_type_members") : t("search_type_ads")}
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-40">
+                  <DropdownMenuItem onClick={() => setSearchType("ads")}>
+                    {t("search_type_ads")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSearchType("members")}>
+                    {t("search_type_members")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder={searchPlaceholder}
+                  aria-label={searchPlaceholder}
+                  className="w-full h-full pl-10 pr-4 text-sm bg-transparent placeholder:text-muted-foreground focus:outline-none"
+                />
+              </div>
             </div>
           </div>
 
@@ -128,6 +151,7 @@ const Navbar = () => {
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label={t("cart")}
                         className="text-muted-foreground hover:text-primary hover:bg-secondary/10"
                       >
                         <ShoppingCart className="h-5 w-5" />
@@ -152,13 +176,11 @@ const Navbar = () => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link to="/favorites" className="hidden sm:flex">
-                    <motion.div
-                      whileHover={{ scale: 1.1 }}
-                      transition={{ duration: 0.2 }}
-                    >
+                    <motion.div whileHover={{ scale: 1.1 }} transition={{ duration: 0.2 }}>
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label={t("favorites")}
                         className="text-muted-foreground hover:text-primary hover:bg-secondary/10"
                       >
                         <Heart className="h-5 w-5" />
@@ -174,13 +196,11 @@ const Navbar = () => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link to="/messages" className="hidden sm:flex">
-                    <motion.div
-                      whileHover={{ scale: 1.1 }}
-                      transition={{ duration: 0.2 }}
-                    >
+                    <motion.div whileHover={{ scale: 1.1 }} transition={{ duration: 0.2 }}>
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label={t("messages")}
                         className="text-muted-foreground hover:text-primary hover:bg-secondary/10"
                       >
                         <MessageCircle className="h-5 w-5" />
@@ -192,10 +212,7 @@ const Navbar = () => {
               </Tooltip>
             </TooltipProvider>
 
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.2 }}
-            >
+            <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
               <Link to="/create">
                 <Button className="bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl gap-2 font-semibold">
                   <Plus className="h-4 w-4" />
@@ -211,10 +228,7 @@ const Navbar = () => {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Link to="/dashboard">
-                        <motion.div
-                          whileHover={{ scale: 1.1 }}
-                          transition={{ duration: 0.2 }}
-                        >
+                        <motion.div whileHover={{ scale: 1.1 }} transition={{ duration: 0.2 }}>
                           <Button
                             variant="outline"
                             size="icon"
@@ -231,10 +245,7 @@ const Navbar = () => {
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <motion.div
-                      whileHover={{ scale: 1.1 }}
-                      transition={{ duration: 0.2 }}
-                    >
+                    <motion.div whileHover={{ scale: 1.1 }} transition={{ duration: 0.2 }}>
                       <Button
                         variant="outline"
                         size="icon"
@@ -245,10 +256,7 @@ const Navbar = () => {
                     </motion.div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      disabled
-                      className="font-semibold text-sm"
-                    >
+                    <DropdownMenuItem disabled className="font-semibold text-sm">
                       {t("hello")}, {user.name}
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -271,10 +279,7 @@ const Navbar = () => {
                 </DropdownMenu>
               </>
             ) : (
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.2 }}
-              >
+              <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
                 <Link to="/login">
                   <Button className="bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl font-semibold">
                     <User className="mr-2 h-4 w-4" />
