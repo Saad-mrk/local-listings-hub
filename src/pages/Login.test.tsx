@@ -1,17 +1,24 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import Login from "./Login";
+import { authApi } from "@/api/auth.api";
 
 const loginMock = vi.fn();
-const registerAndSendCodeMock = vi.fn();
 const navigateMock = vi.fn();
+
+vi.mock("@/api/auth.api", () => ({
+  authApi: {
+    login: vi.fn(),
+    register: vi.fn(),
+    verifyEmail: vi.fn(),
+  },
+}));
 
 vi.mock("@/hooks/useUser", () => ({
   useUser: () => ({
     login: loginMock,
-    registerAndSendCode: registerAndSendCodeMock,
   }),
 }));
 
@@ -32,8 +39,16 @@ vi.mock("react-router-dom", async () => {
 describe("Login page", () => {
   beforeEach(() => {
     loginMock.mockReset();
-    registerAndSendCodeMock.mockReset();
     navigateMock.mockReset();
+    vi.mocked(authApi.login).mockReset();
+    vi.mocked(authApi.login).mockResolvedValue({
+      token: "jwt-token",
+      user: {
+        id: "u-1",
+        email: "john@example.com",
+        name: "john",
+      },
+    });
   });
 
   it("shows validation error when login form is empty", () => {
@@ -49,7 +64,7 @@ describe("Login page", () => {
     expect(loginMock).not.toHaveBeenCalled();
   });
 
-  it("submits login when form is valid", () => {
+  it("submits login when form is valid", async () => {
     render(
       <MemoryRouter>
         <Login />
@@ -65,7 +80,20 @@ describe("Login page", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "sign_in" }));
 
-    expect(loginMock).toHaveBeenCalledWith("john@example.com", "john");
-    expect(navigateMock).toHaveBeenCalledWith("/");
+    await waitFor(() => {
+      expect(authApi.login).toHaveBeenCalledWith({
+        email: "john@example.com",
+        password: "secret123",
+      });
+      expect(loginMock).toHaveBeenCalledWith({
+        token: "jwt-token",
+        user: {
+          id: "u-1",
+          email: "john@example.com",
+          name: "john",
+        },
+      });
+      expect(navigateMock).toHaveBeenCalledWith("/");
+    });
   });
 });

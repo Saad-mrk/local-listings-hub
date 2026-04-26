@@ -378,8 +378,12 @@ const translations: Translations = {
     en: "Create a new account",
     ar: "إنشاء حساب جديد",
   },
-  full_name: { fr: "Nom complet", en: "Full name", ar: "الاسم الكامل" },
-  your_name: { fr: "Votre nom", en: "Your name", ar: "اسمك" },
+  nom: { fr: "Nom", en: "Last name", ar: "الاسم العائلي" },
+  prenom: { fr: "Prénom", en: "First name", ar: "الاسم الشخصي" },
+  telephone: { fr: "Téléphone", en: "Phone number", ar: "رقم الهاتف" },
+  nom_placeholder: { fr: "Votre nom", en: "Your last name", ar: "اسمك العائلي" },
+  prenom_placeholder: { fr: "Votre prénom", en: "Your first name", ar: "اسمك الشخصي" },
+  telephone_placeholder: { fr: "Votre numéro", en: "Your phone number", ar: "رقم هاتفك" },
   email: { fr: "Email", en: "Email", ar: "البريد الإلكتروني" },
   password: { fr: "Mot de passe", en: "Password", ar: "كلمة المرور" },
   sign_in: { fr: "Se connecter", en: "Log in", ar: "تسجيل الدخول" },
@@ -509,7 +513,53 @@ const translations: Translations = {
   category: { fr: "Catégorie", en: "Category", ar: "الفئة" },
   choose: { fr: "Choisir", en: "Choose", ar: "اختر" },
   city: { fr: "Ville", en: "City", ar: "المدينة" },
+  marque: { fr: "Marque", en: "Brand", ar: "العلامة التجارية" },
+  color: { fr: "Couleur", en: "Color", ar: "اللون" },
+  condition: { fr: "État", en: "Condition", ar: "الحالة" },
   publish_ad: { fr: "Publier l'annonce", en: "Publish ad", ar: "نشر الإعلان" },
+
+  // Conditions — clés aplaties : "condition_<id>"
+  condition_new_with_tags: {
+    fr: "Neuf avec étiquette",
+    en: "New with tags",
+    ar: "جديد مع بطاقة",
+  },
+  condition_new_without_tags: {
+    fr: "Neuf sans étiquette",
+    en: "New without tags",
+    ar: "جديد بدون بطاقة",
+  },
+  condition_very_good: {
+    fr: "Très bon état",
+    en: "Very good condition",
+    ar: "حالة جيدة جدا",
+  },
+  condition_good: {
+    fr: "Bon état",
+    en: "Good condition",
+    ar: "حالة جيدة",
+  },
+  condition_acceptable: {
+    fr: "État acceptable",
+    en: "Acceptable condition",
+    ar: "حالة مقبولة",
+  },
+  condition_used: {
+    fr: "Occasion",
+    en: "Used",
+    ar: "مستعمل",
+  },
+
+  // Colors — clés aplaties : "color_<id>"
+  color_black: { fr: "Noir", en: "Black", ar: "أسود" },
+  color_white: { fr: "Blanc", en: "White", ar: "أبيض" },
+  color_red: { fr: "Rouge", en: "Red", ar: "أحمر" },
+  color_blue: { fr: "Bleu", en: "Blue", ar: "أزرق" },
+  color_green: { fr: "Vert", en: "Green", ar: "أخضر" },
+  color_yellow: { fr: "Jaune", en: "Yellow", ar: "أصفر" },
+  color_gray: { fr: "Gris", en: "Gray", ar: "رمادي" },
+  color_brown: { fr: "Marron", en: "Brown", ar: "بني" },
+  color_beige: { fr: "Beige", en: "Beige", ar: "بيج" },
 
   // User Dashboard
   my_ads: { fr: "Mes annonces", en: "My ads", ar: "إعلاناتي" },

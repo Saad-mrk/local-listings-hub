@@ -1,4 +1,4 @@
-export { useCart } from "./useCart";
-export { useNotification } from "./useNotification";
+export { useCart } from "@/features/cart/hooks/useCart";
+export { useNotification } from "@/features/notifications/hooks/useNotification";
 export { useUser } from "./useUser";
 export { useIsMobile } from "./use-mobile";

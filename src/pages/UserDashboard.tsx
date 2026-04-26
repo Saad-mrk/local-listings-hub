@@ -98,7 +98,11 @@ const UserDashboard = () => {
   }, [user, navigate]);
   if (!user) return null;
 
-  const memberSince = new Date(user.id).getFullYear();
+  const parsedIdAsNumber = Number(user.id);
+  const memberSince =
+    Number.isFinite(parsedIdAsNumber) && parsedIdAsNumber > 0
+      ? new Date(parsedIdAsNumber).getFullYear()
+      : new Date().getFullYear();
 
   return (
     <motion.div

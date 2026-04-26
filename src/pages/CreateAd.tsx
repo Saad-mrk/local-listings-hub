@@ -18,6 +18,30 @@ const categories = [
 ];
 const cities = ["Casablanca", "Rabat", "Marrakech", "Fès", "Tanger", "Agadir"];
 
+const PRODUCT_CONDITIONS = [
+  { value: "new_with_tags" },
+  { value: "new_without_tags" },
+  { value: "very_good" },
+  { value: "good" },
+  { value: "acceptable" },
+  { value: "used" },
+];
+
+const PRODUCT_COLORS = [
+  { value: "black" },
+  { value: "white" },
+  { value: "red" },
+  { value: "blue" },
+  { value: "green" },
+  { value: "yellow" },
+  { value: "gray" },
+  { value: "brown" },
+  { value: "beige" },
+  { value: "pink" },
+  { value: "orange" },
+  { value: "purple" },
+];
+
 const CreateAd = () => {
   const [images, setImages] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -96,14 +120,67 @@ const CreateAd = () => {
             />
           </div>
 
-          <div>
-            <label className="text-sm font-medium mb-1.5 block">{t("title")}</label>
-            <input
-              type="text"
-              placeholder={t("title_placeholder")}
-              className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">{t("title")}</label>
+              <input
+                type="text"
+                placeholder={t("title_placeholder")}
+                className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">{t("marque")}</label>
+              <input
+                type="text"
+                placeholder={t("title_placeholder")}
+                className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+            </div>
           </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {/* Ville */}
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">{t("city")}</label>
+              <select className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 appearance-none">
+                <option value="">{t("choose")}</option>
+                {cities.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* État du produit */}
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">{t("condition")}</label>
+              <select className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 appearance-none">
+                <option value="">{t("choose")}</option>
+                {PRODUCT_CONDITIONS.map((cond) => (
+                  <option key={cond.value} value={cond.value}>
+                    {t(`condition_${cond.value}`)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Couleur */}
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">{t("color")}</label>
+              <select className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 appearance-none">
+                <option value="">{t("choose")}</option>
+                {PRODUCT_COLORS.map((color) => (
+                  <option key={color.value} value={color.value}>
+                    {t(`color_${color.value}`)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           <div>
             <label className="text-sm font-medium mb-1.5 block">{t("description_label")}</label>
             <textarea
@@ -112,6 +189,7 @@ const CreateAd = () => {
               className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
             />
           </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium mb-1.5 block">{t("price_dh")}</label>
@@ -132,17 +210,6 @@ const CreateAd = () => {
                 ))}
               </select>
             </div>
-          </div>
-          <div>
-            <label className="text-sm font-medium mb-1.5 block">{t("city")}</label>
-            <select className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 appearance-none">
-              <option value="">{t("choose")}</option>
-              {cities.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
           </div>
 
           <Button className="w-full h-12 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl font-semibold text-base">

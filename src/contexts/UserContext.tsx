@@ -1,26 +1,14 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  ReactNode,
-} from "react";
-
-interface User {
-  id: number;
-  email: string;
-  name: string;
-  verified?: boolean;
-}
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { STORAGE_KEYS } from "@/config/constants";
+import type { AuthResponse, User } from "@/types/user.types";
 
 interface UserContextType {
   user: User | null;
+  token: string | null;
   isLoading: boolean;
-  login: (email: string, name: string) => void;
+  login: (authResponse: AuthResponse) => void;
   logout: () => void;
   updateUser: (name: string) => void;
-  registerAndSendCode: (email: string, name: string) => string;
-  verifyCode: (code: string, email: string) => boolean;
 }
 
 export type { User, UserContextType };
@@ -29,113 +17,124 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export { UserContext };
 
+const parseJwtPayload = (token: string): Record<string, unknown> | null => {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) {
+      return null;
+    }
+
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((char) => `%${`00${char.charCodeAt(0).toString(16)}`.slice(-2)}`)
+        .join(""),
+    );
+
+    return JSON.parse(jsonPayload) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+};
+
+const toStringClaim = (payload: Record<string, unknown> | null, keys: string[]): string => {
+  if (!payload) {
+    return "";
+  }
+
+  for (const key of keys) {
+    const value = payload[key];
+    if (typeof value === "string" && value.trim()) {
+      return value;
+    }
+  }
+
+  return "";
+};
+
+const buildUserFromToken = (token: string): User => {
+  const payload = parseJwtPayload(token);
+  const email = toStringClaim(payload, ["email", "upn", "unique_name"]);
+  const name = toStringClaim(payload, ["name", "given_name"]) || email.split("@")[0] || "User";
+  const id =
+    toStringClaim(payload, [
+      "sub",
+      "nameid",
+      "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
+    ]) ||
+    email ||
+    `${Date.now()}`;
+  const verifiedClaim = payload?.email_verified;
+
+  return {
+    id,
+    email,
+    name,
+    verified: typeof verifiedClaim === "boolean" ? verifiedClaim : true,
+  };
+};
+
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [verificationCode, setVerificationCode] = useState<string | null>(null);
-  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
-  const [pendingName, setPendingName] = useState<string | null>(null);
-
-  // Generate random 6-digit verification code
-  const generateCode = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  };
 
   useEffect(() => {
-    // Load user from localStorage on app startup
-    const storedUser = localStorage.getItem("user");
+    const storedUser = localStorage.getItem(STORAGE_KEYS.USER);
+    const storedToken = localStorage.getItem(STORAGE_KEYS.TOKEN);
+
+    if (storedToken) {
+      setToken(storedToken);
+    }
+
     if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
       } catch (error) {
         console.error("Error parsing stored user:", error);
-        localStorage.removeItem("user");
+        localStorage.removeItem(STORAGE_KEYS.USER);
       }
+    } else if (storedToken) {
+      setUser(buildUserFromToken(storedToken));
     }
+
     setIsLoading(false);
   }, []);
 
-  const login = (email: string, name: string) => {
-    const newUser: User = {
-      id: Date.now(),
-      email,
-      name,
-      verified: true,
-    };
-    setUser(newUser);
-    localStorage.setItem("user", JSON.stringify(newUser));
+  const login = (authResponse: AuthResponse) => {
+    const nextToken = authResponse.token;
+    const nextUser = authResponse.user ?? buildUserFromToken(nextToken);
+
+    setToken(nextToken);
+    setUser(nextUser);
+
+    localStorage.setItem(STORAGE_KEYS.TOKEN, nextToken);
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(nextUser));
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user");
+    setToken(null);
+    localStorage.removeItem(STORAGE_KEYS.USER);
+    localStorage.removeItem(STORAGE_KEYS.TOKEN);
   };
 
   const updateUser = (name: string) => {
     if (user) {
       const updatedUser = { ...user, name };
       setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(updatedUser));
     }
-  };
-
-  const registerAndSendCode = (email: string, name: string) => {
-    const code = generateCode();
-    // Store code and pending data
-    setVerificationCode(code);
-    setPendingEmail(email);
-    setPendingName(name);
-
-    // In production, you would send this via email service
-    // For now, we'll log it and store it in sessionStorage for testing
-    console.log(`Verification code for ${email}: ${code}`);
-    sessionStorage.setItem("verificationCode", code);
-    sessionStorage.setItem("pendingEmail", email);
-    sessionStorage.setItem("pendingName", name);
-
-    return code; // Return for testing purposes
-  };
-
-  const verifyCode = (code: string, email: string) => {
-    const storedCode = sessionStorage.getItem("verificationCode");
-    const storedEmail = sessionStorage.getItem("pendingEmail");
-
-    if (storedCode === code && storedEmail === email) {
-      const name = sessionStorage.getItem("pendingName") || "";
-
-      // Clear verification data
-      sessionStorage.removeItem("verificationCode");
-      sessionStorage.removeItem("pendingEmail");
-      sessionStorage.removeItem("pendingName");
-
-      // Create user
-      const newUser: User = {
-        id: Date.now(),
-        email,
-        name,
-        verified: true,
-      };
-      setUser(newUser);
-      localStorage.setItem("user", JSON.stringify(newUser));
-
-      // Clear context state
-      setVerificationCode(null);
-      setPendingEmail(null);
-      setPendingName(null);
-
-      return true;
-    }
-    return false;
   };
 
   const value = {
     user,
+    token,
     isLoading,
     login,
     logout,
     updateUser,
-    registerAndSendCode,
-    verifyCode,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

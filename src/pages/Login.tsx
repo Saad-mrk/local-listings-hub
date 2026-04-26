@@ -8,9 +8,22 @@ import { useAuthForm } from "@/features/auth";
 
 const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
-  const { values, error, setEmail, setPassword, setName, setError, reset } = useAuthForm();
+  const {
+    values,
+    error,
+    isLoading,
+    setEmail,
+    setPassword,
+    setNom,
+    setPrenom,
+    setTelephone,
+    setError,
+    reset,
+    submitLogin,
+    submitRegister,
+  } = useAuthForm();
   const navigate = useNavigate();
-  const { login, registerAndSendCode } = useUser();
+  const { login } = useUser();
   const { t } = useLanguage();
 
   const validateEmail = (email: string) => {
@@ -18,7 +31,7 @@ const Login = () => {
     return re.test(email);
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setError("");
     if (!values.email || !values.password) {
       setError(t("fill_all_fields"));
@@ -28,13 +41,22 @@ const Login = () => {
       setError(t("invalid_email"));
       return;
     }
-    login(values.email, values.email.split("@")[0]);
-    navigate("/");
+
+    try {
+      const authResponse = await submitLogin({
+        email: values.email,
+        password: values.password,
+      });
+      login(authResponse);
+      navigate("/");
+    } catch {
+      // Error message handled by hook (state + toast)
+    }
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     setError("");
-    if (!values.email || !values.password || !values.name) {
+    if (!values.nom || !values.prenom || !values.email || !values.password || !values.telephone) {
       setError(t("fill_all_fields"));
       return;
     }
@@ -46,13 +68,25 @@ const Login = () => {
       setError(t("password_min"));
       return;
     }
-    registerAndSendCode(values.email, values.name);
-    navigate("/verify-email", { state: { email: values.email } });
+
+    try {
+      await submitRegister({
+        nom: values.nom,
+        prenom: values.prenom,
+        email: values.email,
+        password: values.password,
+        telephone: values.telephone,
+      });
+      sessionStorage.setItem("pendingVerifyEmail", values.email);
+      navigate("/verify-email", { state: { email: values.email } });
+    } catch {
+      // Error message handled by hook (state + toast)
+    }
   };
 
-  const handleSubmit = () => {
-    if (isRegister) handleRegister();
-    else handleLogin();
+  const handleSubmit = async () => {
+    if (isRegister) await handleRegister();
+    else await handleLogin();
   };
 
   return (
@@ -84,15 +118,37 @@ const Login = () => {
           )}
 
           {isRegister && (
-            <div>
-              <label className="text-sm font-medium mb-1.5 block">{t("full_name")}</label>
-              <input
-                type="text"
-                placeholder={t("your_name")}
-                value={values.name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">{t("nom")}</label>
+                <input
+                  type="text"
+                  placeholder={t("nom_placeholder")}
+                  value={values.nom}
+                  onChange={(e) => setNom(e.target.value)}
+                  className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">{t("prenom")}</label>
+                <input
+                  type="text"
+                  placeholder={t("prenom_placeholder")}
+                  value={values.prenom}
+                  onChange={(e) => setPrenom(e.target.value)}
+                  className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="text-sm font-medium mb-1.5 block">{t("telephone")}</label>
+                <input
+                  type="tel"
+                  placeholder={t("telephone_placeholder")}
+                  value={values.telephone}
+                  onChange={(e) => setTelephone(e.target.value)}
+                  className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
             </div>
           )}
           <div>
@@ -120,9 +176,10 @@ const Login = () => {
 
           <Button
             onClick={handleSubmit}
+            disabled={isLoading}
             className="w-full h-11 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl font-semibold"
           >
-            {isRegister ? t("sign_up") : t("sign_in")}
+            {isLoading ? "..." : isRegister ? t("sign_up") : t("sign_in")}
           </Button>
         </div>
 

@@ -31,15 +31,15 @@ vi.mock("@/contexts/LanguageContext", () => ({
   }),
 }));
 
-vi.mock("./NotificationDropdown", () => ({
+vi.mock("@/features/notifications/components/NotificationDropdown", () => ({
   default: () => <div data-testid="notif" />,
 }));
 
-vi.mock("./LanguageSwitcher", () => ({
+vi.mock("@/components/LanguageSwitcher", () => ({
   default: () => <div data-testid="lang" />,
 }));
 
-vi.mock("./Categories", () => ({
+vi.mock("@/components/Categories", () => ({
   default: () => <div data-testid="categories" />,
 }));
 
