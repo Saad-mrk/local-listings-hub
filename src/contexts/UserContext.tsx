@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from "react";
 import { STORAGE_KEYS } from "@/config/constants";
 import type { AuthResponse, User } from "@/types/user.types";
 
@@ -75,34 +75,67 @@ const buildUserFromToken = (token: string): User => {
   };
 };
 
+const isUser = (value: unknown): value is User => {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as User;
+  return (
+    typeof candidate.id === "string" &&
+    typeof candidate.email === "string" &&
+    typeof candidate.name === "string"
+  );
+};
+
+const extractUser = (data: unknown): User | null => {
+  if (isUser(data)) {
+    return data;
+  }
+
+  if (
+    data &&
+    typeof data === "object" &&
+    "user" in data &&
+    isUser((data as { user?: unknown }).user)
+  ) {
+    return (data as { user: User }).user;
+  }
+
+  return null;
+};
+
+const readStoredUser = (): User | null => {
+  const storedUser = localStorage.getItem(STORAGE_KEYS.USER);
+
+  if (!storedUser) {
+    return null;
+  }
+
+  try {
+    const parsedUser = JSON.parse(storedUser) as unknown;
+    return isUser(parsedUser) ? parsedUser : null;
+  } catch {
+    localStorage.removeItem(STORAGE_KEYS.USER);
+    return null;
+  }
+};
+
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem(STORAGE_KEYS.USER);
-    const storedToken = localStorage.getItem(STORAGE_KEYS.TOKEN);
-
-    if (storedToken) {
-      setToken(storedToken);
-    }
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem(STORAGE_KEYS.TOKEN));
+  const [user, setUser] = useState<User | null>(() => {
+    const storedUser = readStoredUser();
 
     if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Error parsing stored user:", error);
-        localStorage.removeItem(STORAGE_KEYS.USER);
-      }
-    } else if (storedToken) {
-      setUser(buildUserFromToken(storedToken));
+      return storedUser;
     }
 
-    setIsLoading(false);
-  }, []);
+    const storedToken = localStorage.getItem(STORAGE_KEYS.TOKEN);
+    return storedToken ? buildUserFromToken(storedToken) : null;
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
-  const login = (authResponse: AuthResponse) => {
+  const login = useCallback((authResponse: AuthResponse) => {
     const nextToken = authResponse.token;
     const nextUser = authResponse.user ?? buildUserFromToken(nextToken);
 
@@ -111,22 +144,56 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
     localStorage.setItem(STORAGE_KEYS.TOKEN, nextToken);
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(nextUser));
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     setToken(null);
     localStorage.removeItem(STORAGE_KEYS.USER);
     localStorage.removeItem(STORAGE_KEYS.TOKEN);
-  };
+  }, []);
 
-  const updateUser = (name: string) => {
-    if (user) {
-      const updatedUser = { ...user, name };
-      setUser(updatedUser);
-      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(updatedUser));
+  const updateUser = useCallback(
+    (name: string) => {
+      if (user) {
+        const updatedUser = { ...user, name };
+        setUser(updatedUser);
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(updatedUser));
+      }
+    },
+    [user],
+  );
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem(STORAGE_KEYS.TOKEN);
+    const storedUser = readStoredUser();
+
+    if (storedToken) {
+      setToken(storedToken);
+      if (storedUser) {
+        setUser(storedUser);
+      } else {
+        setUser(buildUserFromToken(storedToken));
+      }
+    } else {
+      setUser(null);
+      setToken(null);
     }
-  };
+
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      logout();
+    };
+
+    window.addEventListener("unauthorized", handleUnauthorized);
+
+    return () => {
+      window.removeEventListener("unauthorized", handleUnauthorized);
+    };
+  }, [logout]);
 
   const value = {
     user,

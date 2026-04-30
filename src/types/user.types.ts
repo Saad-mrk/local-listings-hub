@@ -34,3 +34,24 @@ export interface AuthResponse {
   user?: User;
   message?: string;
 }
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+  errors: string[];
+  timestamp: string;
+}
+
+export interface UserProfile {
+  id: number;
+  email: string;
+  nom: string;
+  prenom: string;
+  telephone: string;
+  role: string;
+  estActif: boolean;
+  dateInscription: string;
+  derniereConnexion: string | null;
+  isVerified: boolean;
+}

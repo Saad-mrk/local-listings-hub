@@ -3,6 +3,7 @@ import { BrowserRouter } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ActivityPing } from "@/components/ActivityPing";
 import { UserProvider } from "@/contexts/UserContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { CartProvider } from "@/contexts/CartContext";
@@ -16,6 +17,7 @@ const App = () => (
     <LanguageProvider>
       <NotificationProvider>
         <UserProvider>
+          <ActivityPing />
           <CartProvider>
             <TooltipProvider>
               <Toaster />

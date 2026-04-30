@@ -29,6 +29,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import NotificationDropdown from "@/features/notifications/components/NotificationDropdown";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Categories from "@/components/Categories";
+import { useProfile } from "@/hooks/useProfile";
 
 const DarkModeToggle = () => {
   const [isDark, setIsDark] = React.useState(() =>
@@ -74,10 +75,14 @@ const DarkModeToggle = () => {
 
 const Navbar = () => {
   const { user, logout } = useUser();
+  const { data: profile } = useProfile();
   const { totalItems } = useCart();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchType, setSearchType] = React.useState<"ads" | "members">("members");
+
+  const displayName =
+    [profile?.nom, profile?.prenom].filter(Boolean).join(" ").trim() || user?.name || "Utilisateur";
 
   const handleLogout = () => {
     logout();
@@ -257,7 +262,7 @@ const Navbar = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem disabled className="font-semibold text-sm">
-                      {t("hello")}, {user.name}
+                      {t("hello")}, {displayName}!
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link to="/profile" className="cursor-pointer">
