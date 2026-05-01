@@ -13,7 +13,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useUser } from "@/hooks/useUser";
+import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/hooks/useCart";
 import { useLanguage } from "@/contexts/LanguageContext";
 import NotificationDropdown from "@/features/notifications/components/NotificationDropdown";
@@ -74,11 +75,11 @@ const DarkModeToggle = () => {
 };
 
 const Navbar = () => {
-  const { user, logout } = useUser();
+  const { user } = useUser();
+  const { isAuthenticated, logout } = useAuth();
   const { data: profile } = useProfile();
   const { totalItems } = useCart();
   const { t } = useLanguage();
-  const navigate = useNavigate();
   const [searchType, setSearchType] = React.useState<"ads" | "members">("members");
 
   const displayName =
@@ -86,7 +87,6 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
   };
 
   const searchPlaceholder =
@@ -227,7 +227,7 @@ const Navbar = () => {
             </motion.div>
 
             {/* Conditional buttons based on login status */}
-            {user ? (
+            {isAuthenticated ? (
               <>
                 <TooltipProvider>
                   <Tooltip>

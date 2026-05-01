@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { useUser } from "@/hooks/useUser";
+import { useAuth } from "@/context/AuthContext";
 import type { ReactNode } from "react";
 
 interface ProtectedRouteProps {
@@ -7,9 +7,9 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, isLoading } = useUser();
+  const { isAuthenticated, isBootstrapping } = useAuth();
 
-  if (isLoading) {
+  if (isBootstrapping) {
     return (
       <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
         Loading...
@@ -17,7 +17,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  if (!user) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 

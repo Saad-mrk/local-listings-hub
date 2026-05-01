@@ -9,6 +9,7 @@ import { NotificationProvider } from "@/contexts/NotificationContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AppRouter } from "@/routes/AppRouter";
+import { AuthProvider } from "@/context/AuthContext";
 
 const queryClient = new QueryClient();
 
@@ -16,18 +17,20 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
       <NotificationProvider>
-        <UserProvider>
-          <ActivityPing />
-          <CartProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <AppRouter />
-              </BrowserRouter>
-            </TooltipProvider>
-          </CartProvider>
-        </UserProvider>
+        <AuthProvider>
+          <UserProvider>
+            <ActivityPing />
+            <CartProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <AppRouter />
+                </BrowserRouter>
+              </TooltipProvider>
+            </CartProvider>
+          </UserProvider>
+        </AuthProvider>
       </NotificationProvider>
     </LanguageProvider>
   </QueryClientProvider>

@@ -2,9 +2,17 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { useUser } from "@/hooks/useUser";
+import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuthForm } from "@/features/auth";
+
+const getLoginErrorMessage = (error: unknown) => {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "Erreur de connexion";
+};
 
 const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
@@ -19,11 +27,10 @@ const Login = () => {
     setTelephone,
     setError,
     reset,
-    submitLogin,
     submitRegister,
   } = useAuthForm();
   const navigate = useNavigate();
-  const { login } = useUser();
+  const { login } = useAuth();
   const { t } = useLanguage();
 
   const validateEmail = (email: string) => {
@@ -43,14 +50,10 @@ const Login = () => {
     }
 
     try {
-      const authResponse = await submitLogin({
-        email: values.email,
-        password: values.password,
-      });
-      login(authResponse);
+      await login(values.email, values.password);
       navigate("/");
-    } catch {
-      // Error message handled by hook (state + toast)
+    } catch (error) {
+      setError(getLoginErrorMessage(error));
     }
   };
 
