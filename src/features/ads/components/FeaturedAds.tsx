@@ -23,12 +23,12 @@ const featuredAds = getDefaultAds()
 const FeaturedAds = () => {
   const { t } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [liked, setLiked] = useState<number[]>([]);
+  const [liked, setLiked] = useState<string[]>([]);
 
   const next = () => setCurrentIndex((prev) => (prev + 1) % featuredAds.length);
   const prev = () =>
     setCurrentIndex((prev) => (prev - 1 + featuredAds.length) % featuredAds.length);
-  const toggleLike = (id: number) =>
+  const toggleLike = (id: string) =>
     setLiked((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   const current = featuredAds[currentIndex];
