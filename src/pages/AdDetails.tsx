@@ -7,6 +7,8 @@ import Footer from "@/components/Footer";
 import StarRating from "@/components/StarRating";
 import Comments from "@/components/Comments";
 import { useState } from "react";
+import { useFavorites } from "@/contexts/FavoritesContext";
+import { useNotification } from "@/hooks/useNotification";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getDefaultAds, getAdById } from "@/data";
 
@@ -24,7 +26,18 @@ const AdDetails = () => {
   const { t } = useLanguage();
   const { id } = useParams();
   const [currentImage, setCurrentImage] = useState(0);
-  const [liked, setLiked] = useState(false);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const { addNotification } = useNotification();
+  const liked = id ? isFavorite(id) : false;
+  const handleToggleFav = () => {
+    if (!id) return;
+    toggleFavorite(id);
+    addNotification(
+      liked ? t("removed_from_favorites") || "Retiré des favoris" : t("added_to_favorites") || "Ajouté aux favoris",
+      "",
+      "success",
+    );
+  };
 
   const all = getDefaultAds();
   const ad = (id && getAdById(id)) || all[0];
@@ -110,7 +123,7 @@ const AdDetails = () => {
                     variant="outline"
                     size="icon"
                     className="h-12 w-12 rounded-xl border-secondary/30 hover:bg-secondary/10"
-                    onClick={() => setLiked(!liked)}
+                    onClick={handleToggleFav}
                   >
                     <Heart className={`h-5 w-5 ${liked ? "fill-red-500 text-red-500" : ""}`} />
                   </Button>

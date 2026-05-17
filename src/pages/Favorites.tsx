@@ -8,69 +8,32 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useFavorites } from "@/contexts/FavoritesContext";
+import { getAdById } from "@/data";
 
-const mockFavorites = [
-  {
-    id: "1",
-    title: "iPhone 15 Pro Max 256GB",
-    price: 12500,
-    city: "Casablanca",
-    date: "Aujourd'hui",
-    image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=300&fit=crop",
-    category: "Téléphones",
-  },
-  {
-    id: "2",
-    title: 'MacBook Pro M3 14"',
-    price: 22000,
-    city: "Rabat",
-    date: "Hier",
-    image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&h=300&fit=crop",
-    category: "Informatique",
-  },
-  {
-    id: "3",
-    title: "Samsung Galaxy S24 Ultra",
-    price: 14000,
-    city: "Tanger",
-    date: "Il y a 2 jours",
-    image: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&h=300&fit=crop",
-    category: "Téléphones",
-  },
-  {
-    id: "4",
-    title: "PlayStation 5 + 2 Manettes",
-    price: 5500,
-    city: "Fès",
-    date: "Il y a 3 jours",
-    image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400&h=300&fit=crop",
-    category: "Jeux & Consoles",
-  },
-  {
-    id: "5",
-    title: "Appartement 3 chambres Guéliz",
-    price: 850000,
-    city: "Marrakech",
-    date: "Il y a 5 jours",
-    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=300&fit=crop",
-    category: "Immobilier",
-  },
-  {
-    id: "6",
-    title: "Vélo électrique Xiaomi",
-    price: 8500,
-    city: "Casablanca",
-    date: "Il y a 1 semaine",
-    image: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=400&h=300&fit=crop",
-    category: "Véhicules",
-  },
-];
+const CITIES = ["Casablanca", "Rabat", "Marrakech", "Fès", "Tanger", "Agadir"];
 
 const Favorites = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [favorites, setFavorites] = useState(mockFavorites);
+  const { favorites: favIds, removeFavorite: removeFav } = useFavorites();
   const { t } = useLanguage();
+
+  const favorites = favIds
+    .map((id, i) => {
+      const ad = getAdById(id);
+      if (!ad) return null;
+      return {
+        id: ad.id,
+        title: ad.title,
+        price: ad.price,
+        city: CITIES[i % CITIES.length],
+        date: "Aujourd'hui",
+        image: ad.images[0],
+        category: ad.category,
+      };
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null);
 
   const filtered = favorites.filter(
     (ad) =>
@@ -81,7 +44,7 @@ const Favorites = () => {
   const removeFavorite = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setFavorites((prev) => prev.filter((f) => f.id !== id));
+    removeFav(id);
   };
 
   return (
