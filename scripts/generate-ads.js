@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 
 // Générer un prix aléatoire entre 70 et 300
-const getRandomPrice = () => Math.floor(Math.random() * (300 - 70 + 1)) + 70;
+const getRandomPrice = () => Math.floor(Math.random() * (300 - 50 + 1)) + 50;
 
 // Lire les dossiers d'images et générer les annonces
 const imgPath = path.join(__dirname, "../public/img_lbal");
