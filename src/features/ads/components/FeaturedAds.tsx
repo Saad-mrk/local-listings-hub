@@ -4,53 +4,31 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getDefaultAds } from "@/data";
 
-const featuredAds = [
-  {
-    id: 1,
-    title: "BMW Série 3 2020",
-    price: "350,000 DH",
-    location: "Casablanca",
-    image: "/img_lbal/WhatsApp Image 2026-05-17 at 12.22.18 AM (2).jpeg",
-    category: "Véhicules",
-    isNew: true,
-  },
-  {
-    id: 2,
-    title: "Apartment luxe 3 chambres",
-    price: "2,500,000 DH",
-    location: "Rabat",
-    image: "https://picsum.photos/500/300?random=2",
-    category: "Immobilier",
-  },
-  {
-    id: 3,
-    title: "iPhone 15 Pro Max",
-    price: "14,999 DH",
-    location: "Marrakech",
-    image: "/img_lbal/WhatsApp Image 2026-05-17 at 12.22.18 AM (3).jpeg",
-    category: "Téléphones",
-    isNew: true,
-  },
-  {
-    id: 4,
-    title: "MacBook Pro M3",
-    price: "22,500 DH",
-    location: "Fès",
-    image: "https://picsum.photos/500/300?random=4",
-    category: "Informatique",
-  },
-];
+const CITIES = ["Casablanca", "Rabat", "Marrakech", "Fès"];
+
+const featuredAds = getDefaultAds()
+  .slice(0, 4)
+  .map((ad, i) => ({
+    id: ad.id,
+    title: ad.title,
+    price: `${ad.price.toLocaleString()} DH`,
+    location: CITIES[i % CITIES.length],
+    image: ad.images[0],
+    category: ad.category,
+    isNew: i % 2 === 0,
+  }));
 
 const FeaturedAds = () => {
   const { t } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [liked, setLiked] = useState<number[]>([]);
+  const [liked, setLiked] = useState<string[]>([]);
 
   const next = () => setCurrentIndex((prev) => (prev + 1) % featuredAds.length);
   const prev = () =>
     setCurrentIndex((prev) => (prev - 1 + featuredAds.length) % featuredAds.length);
-  const toggleLike = (id: number) =>
+  const toggleLike = (id: string) =>
     setLiked((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   const current = featuredAds[currentIndex];
