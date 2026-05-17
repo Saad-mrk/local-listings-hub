@@ -7,6 +7,8 @@ import Footer from "@/components/Footer";
 import StarRating from "@/components/StarRating";
 import Comments from "@/components/Comments";
 import { useState } from "react";
+import { useFavorites } from "@/contexts/FavoritesContext";
+import { useNotification } from "@/hooks/useNotification";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getDefaultAds, getAdById } from "@/data";
 

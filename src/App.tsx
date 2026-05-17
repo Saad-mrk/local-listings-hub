@@ -7,6 +7,7 @@ import { ActivityPing } from "@/components/ActivityPing";
 import { UserProvider } from "@/contexts/UserContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { CartProvider } from "@/contexts/CartContext";
+import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AppRouter } from "@/routes/AppRouter";
 import { AuthProvider } from "@/context/AuthContext";
@@ -21,13 +22,15 @@ const App = () => (
           <UserProvider>
             <ActivityPing />
             <CartProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <AppRouter />
-                </BrowserRouter>
-              </TooltipProvider>
+              <FavoritesProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
+                  <BrowserRouter>
+                    <AppRouter />
+                  </BrowserRouter>
+                </TooltipProvider>
+              </FavoritesProvider>
             </CartProvider>
           </UserProvider>
         </AuthProvider>
