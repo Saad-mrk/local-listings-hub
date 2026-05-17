@@ -195,6 +195,29 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [logout]);
 
+  useEffect(() => {
+    const handleAuthLogin = (e: Event) => {
+      try {
+        const detail = (e as CustomEvent)?.detail ?? {};
+        const nextToken = detail.token ?? detail.accessToken ?? null;
+        const nextUser = detail.user ?? undefined;
+
+        if (!nextToken) return;
+
+        // Use the existing login function to set state + localStorage
+        login({ token: nextToken, user: nextUser });
+      } catch {
+        // ignore malformed events
+      }
+    };
+
+    window.addEventListener("auth:login", handleAuthLogin as EventListener);
+
+    return () => {
+      window.removeEventListener("auth:login", handleAuthLogin as EventListener);
+    };
+  }, [login]);
+
   const value = {
     user,
     token,

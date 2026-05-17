@@ -27,6 +27,17 @@ export const AuthProvider = ({ children }) => {
     setEmail(nextEmail);
     setAuthAccessToken(authData.accessToken);
 
+    // Notify other parts of the app (e.g. UserProvider) that a login occurred
+    try {
+      window.dispatchEvent(
+        new CustomEvent("auth:login", {
+          detail: { token: authData.accessToken, user: authData.user ?? null },
+        }),
+      );
+    } catch (e) {
+      // ignore if dispatching the event fails in some environments
+    }
+
     return authData;
   }, []);
 

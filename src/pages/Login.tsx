@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuthForm } from "@/features/auth";
@@ -33,13 +33,22 @@ const Login = () => {
   const { login } = useAuth();
   const { t } = useLanguage();
 
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const intervalRef = useRef<number | null>(null);
+
   const validateEmail = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
   };
 
   const handleLogin = async () => {
+    // prevent submitting while blocked
+    if (isBlocked) return;
+
     setError("");
+    setErrorMessage("");
     if (!values.email || !values.password) {
       setError(t("fill_all_fields"));
       return;
@@ -53,7 +62,21 @@ const Login = () => {
       await login(values.email, values.password);
       navigate("/");
     } catch (error) {
-      setError(getLoginErrorMessage(error));
+      const status = (error as { response?: { status?: number } })?.response?.status;
+
+      if (status === 429) {
+        // Too many attempts: start 60s countdown and block form
+        setIsBlocked(true);
+        setCountdown(60);
+        setErrorMessage(
+          "You have made too many login attempts in the last minute. Please wait 60 seconds before trying again.",
+        );
+      } else if (status === 401) {
+        // Unauthorized: show inline error, keep form enabled
+        setErrorMessage("Incorrect email or password. Please try again.");
+      } else {
+        setError(getLoginErrorMessage(error));
+      }
     }
   };
 
@@ -82,7 +105,7 @@ const Login = () => {
       });
       sessionStorage.setItem("pendingVerifyEmail", values.email);
       navigate("/verify-email", { state: { email: values.email } });
-    } catch {
+    } catch (error) {
       // Error message handled by hook (state + toast)
     }
   };
@@ -91,6 +114,41 @@ const Login = () => {
     if (isRegister) await handleRegister();
     else await handleLogin();
   };
+
+  // Countdown effect: decrement every second while countdown > 0
+  useEffect(() => {
+    if (countdown <= 0) {
+      return;
+    }
+
+    // ensure any existing interval is cleared
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
+    intervalRef.current = window.setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) {
+          // clear and reset
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+          setIsBlocked(false);
+          setErrorMessage("");
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [countdown]);
 
   return (
     <motion.div
@@ -111,12 +169,12 @@ const Login = () => {
         </div>
 
         <div className="bg-card rounded-2xl border border-border p-6 shadow-card space-y-4">
-          {error && (
+          {(errorMessage || error) && (
             <div
               role="alert"
               className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 text-sm text-destructive"
             >
-              {error}
+              {errorMessage || error}
             </div>
           )}
 
@@ -129,6 +187,7 @@ const Login = () => {
                   placeholder={t("nom_placeholder")}
                   value={values.nom}
                   onChange={(e) => setNom(e.target.value)}
+                  disabled={isBlocked}
                   className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>
@@ -139,6 +198,7 @@ const Login = () => {
                   placeholder={t("prenom_placeholder")}
                   value={values.prenom}
                   onChange={(e) => setPrenom(e.target.value)}
+                  disabled={isBlocked}
                   className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>
@@ -149,6 +209,7 @@ const Login = () => {
                   placeholder={t("telephone_placeholder")}
                   value={values.telephone}
                   onChange={(e) => setTelephone(e.target.value)}
+                  disabled={isBlocked}
                   className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>
@@ -161,6 +222,7 @@ const Login = () => {
               placeholder="votre@email.com"
               value={values.email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={isBlocked}
               className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
@@ -171,6 +233,7 @@ const Login = () => {
               placeholder="••••••••"
               value={values.password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isBlocked}
               className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
@@ -179,10 +242,16 @@ const Login = () => {
 
           <Button
             onClick={handleSubmit}
-            disabled={isLoading}
+            disabled={isLoading || isBlocked}
             className="w-full h-11 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl font-semibold"
           >
-            {isLoading ? "..." : isRegister ? t("sign_up") : t("sign_in")}
+            {isBlocked
+              ? `Please wait... (${countdown}s)`
+              : isLoading
+                ? "..."
+                : isRegister
+                  ? t("sign_up")
+                  : t("sign_in")}
           </Button>
         </div>
 

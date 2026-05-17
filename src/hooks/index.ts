@@ -3,3 +3,4 @@ export { useNotification } from "@/features/notifications/hooks/useNotification"
 export { useUser } from "./useUser";
 export { useProfile } from "./useProfile";
 export { useIsMobile } from "./use-mobile";
+export { useAds } from "./useAds";
