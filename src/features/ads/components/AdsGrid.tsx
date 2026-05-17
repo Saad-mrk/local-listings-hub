@@ -6,126 +6,19 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getDefaultAds } from "@/data";
 
-const mockAds = [
-  {
-    id: "1",
-    title: "iPhone 15 Pro Max 256GB - Comme neuf",
-    price: 12500,
-    city: "Casablanca",
-    image: "/img_lbal/WhatsApp Image 2026-05-17 at 12.22.15 AM.jpeg",
-    date: "Aujourd'hui",
-    category: "Électronique",
-  },
-  {
-    id: "2",
-    title: "Appartement 3 chambres - Hay Riad",
-    price: 850000,
-    city: "Rabat",
-    image: "https://picsum.photos/600/450?random=6",
-    date: "Hier",
-    category: "Immobilier",
-  },
-  {
-    id: "3",
-    title: "Mercedes Classe C 220d - 2021",
-    price: 295000,
-    city: "Marrakech",
-    image: "/img_lbal/WhatsApp Image 2026-05-17 at 12.22.16 AM.jpeg",
-    date: "Hier",
-    category: "Véhicules",
-  },
-  {
-    id: "4",
-    title: "MacBook Pro M2 14 pouces",
-    price: 18000,
-    city: "Fès",
-    image: "https://picsum.photos/600/450?random=8",
-    date: "Il y a 2 jours",
-    category: "Électronique",
-  },
-  {
-    id: "5",
-    title: "Canapé moderne en cuir - Excellent état",
-    price: 4500,
-    city: "Tanger",
-    image: "/img_lbal/WhatsApp Image 2026-05-17 at 12.22.17 AM (1).jpeg",
-    date: "Il y a 3 jours",
-    category: "Mobilier",
-  },
-  {
-    id: "6",
-    title: "Samsung Galaxy S24 Ultra",
-    price: 9800,
-    city: "Agadir",
-    image: "https://picsum.photos/600/450?random=10",
-    date: "Il y a 3 jours",
-    category: "Électronique",
-  },
-  {
-    id: "7",
-    title: "Vélo électrique pliable - Neuf",
-    price: 3200,
-    city: "Casablanca",
-    image: "/img_lbal/WhatsApp Image 2026-05-17 at 12.22.17 AM (2).jpeg",
-    date: "Il y a 4 jours",
-    category: "Sports",
-  },
-  {
-    id: "8",
-    title: "Table à manger en bois massif",
-    price: 2800,
-    city: "Rabat",
-    image: "https://picsum.photos/600/450?random=12",
-    date: "Il y a 5 jours",
-    category: "Mobilier",
-  },
-  {
-    id: "9",
-    title: "Montre de luxe - Rolex Submariner",
-    price: 45000,
-    city: "Casablanca",
-    image: "/img_lbal/WhatsApp Image 2026-05-17 at 12.22.17 AM (3).jpeg",
-    date: "Aujourd'hui",
-    category: "Accessoires",
-  },
-  {
-    id: "10",
-    title: "Sac à main de marque - Authentic",
-    price: 3500,
-    city: "Marrakech",
-    image: "https://picsum.photos/600/450?random=15",
-    date: "Il y a 2 jours",
-    category: "Mode",
-  },
-  {
-    id: "11",
-    title: "Chaussures de sport Nike - Neuf",
-    price: 1200,
-    city: "Fès",
-    image: "/img_lbal/WhatsApp Image 2026-05-17 at 12.22.17 AM (4).jpeg",
-    date: "Il y a 1 jour",
-    category: "Mode",
-  },
-  {
-    id: "12",
-    title: "Caméra DSLR Canon 5D Mark IV",
-    price: 8500,
-    city: "Rabat",
-    image: "https://picsum.photos/600/450?random=18",
-    date: "Il y a 3 jours",
-    category: "Électronique",
-  },
-  {
-    id: "13",
-    title: "Lampadaire moderne - Design",
-    price: 2200,
-    city: "Agadir",
-    image: "/img_lbal/WhatsApp Image 2026-05-17 at 12.22.17 AM.jpeg",
-    date: "Aujourd'hui",
-    category: "Décoration",
-  },
-];
+const CITIES = ["Casablanca", "Rabat", "Marrakech", "Fès", "Tanger", "Agadir"];
+
+const mockAds = getDefaultAds().map((ad, i) => ({
+  id: ad.id,
+  title: ad.title,
+  price: ad.price,
+  city: CITIES[i % CITIES.length],
+  image: ad.images[0],
+  date: "Aujourd'hui",
+  category: ad.category,
+}));
 
 const defaultFilters: Filters = {
   priceRange: [0, 1000000],
