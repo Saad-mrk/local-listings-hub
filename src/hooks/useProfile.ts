@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
-import { authApi } from "@/api/auth.api";
+import { usersApi } from "@/api/users.api";
 import { useUser } from "@/hooks/useUser";
 import type { UserProfile } from "@/types/user.types";
 
@@ -44,14 +44,14 @@ export const useProfile = (): UseProfileReturn => {
     setError(null);
 
     try {
-      const profile = await authApi.getCurrentUserProfile();
+      const profile = await usersApi.getCurrentUserProfile();
       setData(profile);
     } catch (err) {
       const userId = Number(user.id);
 
       if (Number.isFinite(userId)) {
         try {
-          const profile = await authApi.getUserProfile(userId);
+          const profile = await usersApi.getById(userId);
           setData(profile);
           return;
         } catch {

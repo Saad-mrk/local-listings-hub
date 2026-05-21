@@ -15,6 +15,7 @@ const Cart = lazy(() => import("@/pages/Cart"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const Settings = lazy(() => import("@/pages/Settings"));
+const MyAds = lazy(() => import("@/pages/MyAds"));
 
 export const AppRouter = () => {
   return (
@@ -80,10 +81,26 @@ export const AppRouter = () => {
           }
         />
         <Route
+          path="/ads"
+          element={
+            <ProtectedRoute>
+              <MyAds />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/settings"
           element={
             <ProtectedRoute>
               <Settings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-ads"
+          element={
+            <ProtectedRoute>
+              <MyAds />
             </ProtectedRoute>
           }
         />
