@@ -13,7 +13,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -80,6 +80,7 @@ const Navbar = () => {
   const { data: profile } = useProfile();
   const { totalItems } = useCart();
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [searchType, setSearchType] = React.useState<"ads" | "members">("members");
 
   const displayName =
@@ -302,7 +303,18 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
-      <Categories />
+      <Categories
+        onFilter={(filters) => {
+          const params = new URLSearchParams();
+          if (filters.categoryId !== undefined) {
+            params.set("category", String(filters.categoryId));
+          }
+          if (filters.subCategoryId !== undefined) {
+            params.set("subCategory", String(filters.subCategoryId));
+          }
+          navigate(`/ads?${params.toString()}`);
+        }}
+      />
     </header>
   );
 };

@@ -1,194 +1,150 @@
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
+  ChevronDown,
+  Loader,
   User,
   Users,
   Baby,
-  Crown,
+  Home,
+  Smartphone,
   Activity,
-  Sparkles,
-  TrendingUp,
   Tag,
+  Sparkles,
+  LayoutGrid,
 } from "lucide-react";
-import { useRef, useState, useEffect } from "react";
-import { motion, useInView } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import axios from "axios";
 
-const categories = [
-  {
-    name: "Women",
-    icon: User,
-    count: 28450,
-    color: "#FF69B4",
-    bgColor: "from-pink-50 to-rose-50",
-  },
-  {
-    name: "Men",
-    icon: Users,
-    count: 19860,
-    color: "#4A90E2",
-    bgColor: "from-blue-50 to-indigo-50",
-  },
-  {
-    name: "Kids",
-    icon: Baby,
-    count: 15340,
-    color: "#FFD700",
-    bgColor: "from-yellow-50 to-amber-50",
-  },
-  {
-    name: "Brands",
-    icon: Crown,
-    count: 8920,
-    trend: true,
-    color: "#E67E22",
-    bgColor: "from-orange-50 to-amber-50",
-  },
-  {
-    name: "Sports",
-    icon: Activity,
-    count: 12670,
-    color: "#27AE60",
-    bgColor: "from-green-50 to-emerald-50",
-  },
-  {
-    name: "Trending",
-    icon: TrendingUp,
-    count: 34200,
-    trend: true,
-    color: "#E91E63",
-    bgColor: "from-red-50 to-pink-50",
-  },
-  {
-    name: "Sale",
-    icon: Tag,
-    count: 9540,
-    trend: true,
-    color: "#FF0000",
-    bgColor: "from-red-50 to-rose-50",
-  },
-];
+interface Category {
+  id: number;
+  nom: string;
+  children?: Category[];
+}
 
-// Animated counter component
-const AnimatedCounter = ({
-  target,
-  isTrending,
-}: {
-  target: number;
-  isTrending?: boolean;
-}) => {
-  const [count, setCount] = useState(0);
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
+interface CategoriesProps {
+  onFilter: (filters: { categoryId?: number; subCategoryId?: number; label: string }) => void;
+}
 
-  useEffect(() => {
-    if (!isInView) return;
-
-    let start = 0;
-    const end = target;
-    const duration = 2000;
-    const increment = end / (duration / 16);
-
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= end) {
-        setCount(end);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start));
-      }
-    }, 16);
-
-    return () => clearInterval(timer);
-  }, [isInView, target]);
-
-  return (
-    <span ref={ref}>
-      {count.toLocaleString()}
-      {isTrending && (
-        <Sparkles className="inline-block w-3 h-3 ml-1 text-yellow-500 animate-bounce" />
-      )}
-    </span>
-  );
+const getCategoryIcon = (name: string) => {
+  const n = name.toLowerCase();
+  if (n.includes("femme")) return User;
+  if (n.includes("homme")) return Users;
+  if (n.includes("enfant")) return Baby;
+  if (n.includes("maison")) return Home;
+  if (n.includes("électro")) return Smartphone;
+  if (n.includes("sport")) return Activity;
+  return LayoutGrid;
 };
 
-const Categories = () => {
-  const scrollRef = useRef<HTMLDivElement>(null);
+const Categories = ({ onFilter }: CategoriesProps) => {
+  const { t } = useTranslation();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [activeCategory, setActiveCategory] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get<Category[]>("https://localhost:7111/api/Categorie/tree");
+        setCategories(response.data);
+      } catch (err) {
+        console.error("Erreur API", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
 
-  const itemVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: { duration: 0.6 },
-    },
-  };
+  if (isLoading)
+    return (
+      <div className="h-12 flex items-center justify-center">
+        <Loader className="animate-spin h-5 w-5 text-primary" />
+      </div>
+    );
 
   return (
-    <section className="py-4 border-t border-border bg-background">
+    <div className="bg-background border-b border-border w-full">
       <div className="container">
-        <motion.div
-          className="flex gap-8 items-center overflow-x-auto pb-2 scrollbar-hide"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-        >
-          {categories.map((cat) => (
-            <motion.button
-              key={cat.name}
-              variants={itemVariants}
-              className={`flex items-center gap-2 whitespace-nowrap py-3 px-2 font-semibold transition-all relative group ${
-                cat.name === "Sale"
-                  ? "text-destructive font-bold text-lg"
-                  : cat.trend
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-              }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {/* Icône */}
-              <motion.div
-                className="flex items-center justify-center"
-                whileHover={{ rotate: 10, scale: 1.1 }}
+        {/* IMPORTANT: Ne pas mettre overflow-hidden ici sinon le menu sera coupé */}
+        <div className="flex items-center gap-6 h-12 overflow-x-auto scrollbar-hide no-scrollbar">
+          {categories.map((cat) => {
+            const Icon = getCategoryIcon(cat.nom);
+            const isHot = ["Femmes", "Hommes", "Électronique"].includes(cat.nom);
+
+            return (
+              <div
+                key={cat.id}
+                className="relative h-full flex items-center shrink-0"
+                onMouseEnter={() => setActiveCategory(cat.id)}
+                onMouseLeave={() => setActiveCategory(null)}
               >
-                <cat.icon className="h-5 w-5" />
-              </motion.div>
-
-              {/* Texte */}
-              <span>{cat.name}</span>
-
-              {/* Indicateur tendance */}
-              {cat.trend && cat.name !== "Sale" && (
-                <motion.span
-                  className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-semibold"
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
+                <button
+                  className={`flex items-center gap-1.5 px-1 text-sm font-medium transition-colors h-full border-b-2 ${
+                    activeCategory === cat.id
+                      ? "text-primary border-primary"
+                      : "text-muted-foreground border-transparent hover:text-foreground"
+                  }`}
                 >
-                  HOT
-                </motion.span>
-              )}
+                  <Icon className="h-4 w-4" />
+                  <span>{t(cat.nom)}</span>
+                  {isHot && (
+                    <span className="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded-sm font-bold leading-none">
+                      HOT
+                    </span>
+                  )}
+                  <ChevronDown
+                    className={`h-3 w-3 opacity-50 transition-transform ${activeCategory === cat.id ? "rotate-180" : ""}`}
+                  />
+                </button>
 
-              {/* Underline au hover */}
-              <motion.div
-                className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-primary to-primary-hover"
-                initial={{ width: 0 }}
-                whileHover={{ width: "100%" }}
-                transition={{ duration: 0.3 }}
-              />
-            </motion.button>
-          ))}
-        </motion.div>
+                {/* MENU DÉROULANT */}
+                <AnimatePresence>
+                  {activeCategory === cat.id && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 5 }}
+                      // z-index très élevé et position absolue
+                      className="absolute top-full left-0 w-64 bg-white dark:bg-slate-900 border border-border shadow-xl rounded-b-lg py-2 z-[999] mt-[-1px]"
+                    >
+                      <button
+                        onClick={() => {
+                          onFilter({ categoryId: cat.id, label: cat.nom });
+                          setActiveCategory(null);
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-sm font-bold text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 flex justify-between items-center"
+                      >
+                        {t("Voir tout")} {t(cat.nom)}
+                        <Sparkles className="h-3.5 w-3.5" />
+                      </button>
+
+                      <div className="h-[1px] bg-border my-1 mx-2" />
+
+                      <div className="max-h-[300px] overflow-y-auto">
+                        {cat.children?.map((sub) => (
+                          <button
+                            key={sub.id}
+                            onClick={() => {
+                              onFilter({ subCategoryId: sub.id, label: sub.nom });
+                              setActiveCategory(null);
+                            }}
+                            className="w-full text-left px-4 py-2 text-[13.5px] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                          >
+                            {t(sub.nom)}
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </section>
+    </div>
   );
 };
 
