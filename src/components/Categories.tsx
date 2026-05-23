@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronDown,
+  ChevronRight,
   User,
   Users,
   Baby,
@@ -11,6 +12,10 @@ import {
   Sparkles,
   LayoutGrid,
   Shirt,
+  Footprints,
+  Watch,
+  Grid3X3,
+  Package,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
@@ -103,6 +108,16 @@ const getCategoryIcon = (name: string) => {
   return LayoutGrid;
 };
 
+const getSubCategoryIcon = (name: string) => {
+  const n = name.toLowerCase();
+  if (n.includes("vêt") || n.includes("vet") || n.includes("shirt") || n.includes("t-shirt")) return Shirt;
+  if (n.includes("chauss")) return Footprints;
+  if (n.includes("access") || n.includes("bijoux") || n.includes("montre")) return Watch;
+  if (n.includes("sac")) return Package;
+  if (n.includes("soin")) return Sparkles;
+  return LayoutGrid;
+};
+
 const Categories = ({ onFilter }: CategoriesProps) => {
   const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
@@ -148,40 +163,24 @@ const Categories = ({ onFilter }: CategoriesProps) => {
   };
 
   return (
-    <div className="bg-background border-b border-border w-full">
-      <div className="container">
-        <div
-          ref={containerRef}
-          className="flex items-center gap-1 h-12 overflow-x-auto no-scrollbar"
-        >
+    <div className="relative z-40 bg-background border-b border-border w-full">
+      <div ref={containerRef} className="container relative">
+        <div className="flex items-center gap-8 h-14 overflow-visible whitespace-nowrap">
           {categories.map((cat) => {
-            const Icon = getCategoryIcon(cat.nom);
             const isActive = activeCategory === cat.id;
-            const isHot = ["Femmes", "Hommes", "Électronique"].includes(cat.nom);
 
             return (
-              <div key={cat.id} className="relative h-full flex items-center shrink-0">
+              <div key={cat.id} className="h-full flex items-center shrink-0">
                 <button
                   type="button"
                   onClick={() => toggle(cat.id)}
-                  className={`flex items-center gap-1.5 px-3 h-9 rounded-lg text-sm font-medium transition-colors ${
+                  className={`relative h-full px-1 text-base font-medium transition-colors ${
                     isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      ? "text-foreground after:absolute after:left-0 after:right-0 after:bottom-0 after:h-0.5 after:bg-primary"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
                   <span>{t(cat.nom)}</span>
-                  {isHot && (
-                    <span className="text-[10px] bg-primary text-primary-foreground px-1.5 py-0.5 rounded-sm font-bold leading-none">
-                      HOT
-                    </span>
-                  )}
-                  <ChevronDown
-                    className={`h-3.5 w-3.5 opacity-60 transition-transform ${
-                      isActive ? "rotate-180" : ""
-                    }`}
-                  />
                 </button>
 
                 <AnimatePresence>
@@ -191,38 +190,44 @@ const Categories = ({ onFilter }: CategoriesProps) => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 6 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute top-full left-0 w-72 bg-popover text-popover-foreground border border-border shadow-2xl rounded-xl py-2 z-[999] mt-1"
+                      className="absolute left-0 right-0 top-full z-[999] min-h-[320px] bg-popover text-popover-foreground border-t border-border shadow-2xl"
                     >
-                      <button
-                        type="button"
-                        onClick={() => handleSelection(cat.id, undefined, cat.nom)}
-                        className="w-full text-left px-4 py-2.5 text-sm font-semibold text-primary hover:bg-primary/5 flex justify-between items-center"
-                      >
-                        <span>
-                          {t("Voir tout")} {t(cat.nom)}
-                        </span>
-                        <Sparkles className="h-3.5 w-3.5" />
-                      </button>
+                      <div className="container py-7">
+                        <div className="w-full max-w-sm space-y-1">
+                          <button
+                            type="button"
+                            onClick={() => handleSelection(cat.id, undefined, cat.nom)}
+                            className="group flex w-full items-center gap-4 px-3 py-2.5 text-left text-lg font-medium text-muted-foreground hover:text-primary"
+                          >
+                            <Grid3X3 className="h-6 w-6 text-primary" />
+                            <span>{t("Voir tout")}</span>
+                          </button>
 
-                      {cat.children && cat.children.length > 0 && (
-                        <>
-                          <div className="h-px bg-border my-1 mx-2" />
-                          <div className="max-h-[320px] overflow-y-auto py-1">
-                            {cat.children.map((sub) => (
+                          {cat.children?.map((sub, index) => {
+                            const SubIcon = getSubCategoryIcon(sub.nom);
+                            const hasChildren = Boolean(sub.children?.length);
+
+                            return (
                               <button
                                 key={sub.id}
                                 type="button"
-                                onClick={() =>
-                                  handleSelection(undefined, sub.id, sub.nom)
-                                }
-                                className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                                onClick={() => handleSelection(undefined, sub.id, sub.nom)}
+                                className={`group flex w-full items-center gap-4 px-3 py-2.5 text-left text-lg transition-colors hover:text-primary ${
+                                  index === 0
+                                    ? "font-bold text-foreground"
+                                    : "font-medium text-muted-foreground"
+                                }`}
                               >
-                                {t(sub.nom)}
+                                <SubIcon className="h-6 w-6 text-primary" />
+                                <span className="flex-1">{t(sub.nom)}</span>
+                                {hasChildren && (
+                                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
+                                )}
                               </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
+                            );
+                          })}
+                        </div>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
