@@ -5,11 +5,7 @@
     "description": "🔴Condition 9/10",
     "price": 216,
     "category": "Casquette",
-    "images": [
-      "/img_lbal/Casquette/SnapInsta.to_655298736_18091538690471568_6298213026187243784_n.jpg",
-      "/img_lbal/Casquette/SnapInsta.to_655309207_18099349637477614_2168116588360515774_n.jpg",
-      "/img_lbal/Casquette/SnapInsta.to_660534922_18452153395104777_7413448833096077115_n.jpg"
-    ],
+    "images": ["/placeholder-ad.png", "/placeholder-ad.png", "/placeholder-ad.png"],
     "userId": "admin",
     "createdAt": "2026-05-17T17:56:37.429Z",
     "updatedAt": "2026-05-17T17:56:37.429Z"
@@ -20,11 +16,7 @@
     "description": "Catégorie: T-shirt",
     "price": 247,
     "category": "T-shirt",
-    "images": [
-      "/img_lbal/T-shirt/SnapInsta.to_651975237_18012896240676765_3980114138577274580_n.jpg",
-      "/img_lbal/T-shirt/SnapInsta.to_654233436_18186143032371302_7930598489180212492_n.jpg",
-      "/img_lbal/T-shirt/SnapInsta.to_654940558_18101223632477720_3233234996604460116_n.jpg"
-    ],
+    "images": ["/placeholder-ad.png", "/placeholder-ad.png", "/placeholder-ad.png"],
     "userId": "admin",
     "createdAt": "2026-05-17T17:56:37.430Z",
     "updatedAt": "2026-05-17T17:56:37.430Z"
@@ -36,11 +28,11 @@
     "price": 121,
     "category": "polo lacoste",
     "images": [
-      "/img_lbal/polo%20lacoste/SnapInsta.to_653533701_18110524255625854_6378044521248220231_n.jpg",
-      "/img_lbal/polo%20lacoste/SnapInsta.to_654454796_18116111335641073_8178420465411355205_n.jpg",
-      "/img_lbal/polo%20lacoste/SnapInsta.to_657834859_18581425591045412_6303568402411005196_n.jpg",
-      "/img_lbal/polo%20lacoste/SnapInsta.to_661103625_18406105156178660_2279865405721943127_n.jpg",
-      "/img_lbal/polo%20lacoste/SnapInsta.to_669848014_18369116491165929_6545558637378218051_n.jpg"
+      "/placeholder-ad.png",
+      "/placeholder-ad.png",
+      "/placeholder-ad.png",
+      "/placeholder-ad.png",
+      "/placeholder-ad.png"
     ],
     "userId": "admin",
     "createdAt": "2026-05-17T17:56:37.430Z",
@@ -52,10 +44,7 @@
     "description": "Catégorie: polo_lacoste green",
     "price": 105,
     "category": "polo_lacoste green",
-    "images": [
-      "/img_lbal/polo_lacoste%20green/SnapInsta.to_655986193_18094090238080841_4557355209077927731_n.jpg",
-      "/img_lbal/polo_lacoste%20green/SnapInsta.to_669592982_18108502255853171_7156036806905432723_n.jpg"
-    ],
+    "images": ["/placeholder-ad.png", "/placeholder-ad.png"],
     "userId": "admin",
     "createdAt": "2026-05-17T17:56:37.430Z",
     "updatedAt": "2026-05-17T17:56:37.430Z"
@@ -67,10 +56,10 @@
     "price": 112,
     "category": "shoes_nike",
     "images": [
-      "/img_lbal/shoes_nike/WhatsApp%20Image%202026-05-17%20at%2012.22.18%20AM%20(2).jpeg",
-      "/img_lbal/shoes_nike/WhatsApp%20Image%202026-05-17%20at%2012.22.18%20AM%20(3).jpeg",
-      "/img_lbal/shoes_nike/WhatsApp%20Image%202026-05-17%20at%2012.22.18%20AM%20(4).jpeg",
-      "/img_lbal/shoes_nike/WhatsApp%20Image%202026-05-17%20at%2012.22.18%20AM%20(5).jpeg"
+      "/placeholder-ad.png",
+      "/placeholder-ad.png",
+      "/placeholder-ad.png",
+      "/placeholder-ad.png"
     ],
     "userId": "admin",
     "createdAt": "2026-05-17T17:56:37.430Z",
@@ -82,11 +71,7 @@
     "description": "▫️taille: 42\n▫️condition: 9,5/10\nwhite",
     "price": 68,
     "category": "shoes_nike_white",
-    "images": [
-      "/img_lbal/shoes_nike_white/WhatsApp%20Image%202026-05-17%20at%2012.22.15%20AM.jpeg",
-      "/img_lbal/shoes_nike_white/WhatsApp%20Image%202026-05-17%20at%2012.22.16%20AM.jpeg",
-      "/img_lbal/shoes_nike_white/WhatsApp%20Image%202026-05-17%20at%2012.22.17%20AM.jpeg"
-    ],
+    "images": ["/placeholder-ad.png", "/placeholder-ad.png", "/placeholder-ad.png"],
     "userId": "admin",
     "createdAt": "2026-05-17T17:56:37.431Z",
     "updatedAt": "2026-05-17T17:56:37.431Z"
@@ -98,10 +83,10 @@
     "price": 135,
     "category": "veste",
     "images": [
-      "/img_lbal/veste/WhatsApp%20Image%202026-05-17%20at%2012.22.17%20AM%20(1).jpeg",
-      "/img_lbal/veste/WhatsApp%20Image%202026-05-17%20at%2012.22.17%20AM%20(2).jpeg",
-      "/img_lbal/veste/WhatsApp%20Image%202026-05-17%20at%2012.22.17%20AM%20(3).jpeg",
-      "/img_lbal/veste/WhatsApp%20Image%202026-05-17%20at%2012.22.17%20AM%20(4).jpeg"
+      "/placeholder-ad.png",
+      "/placeholder-ad.png",
+      "/placeholder-ad.png",
+      "/placeholder-ad.png"
     ],
     "userId": "admin",
     "createdAt": "2026-05-17T17:56:37.431Z",

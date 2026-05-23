@@ -1,37 +1,81 @@
 import { ChevronLeft, ChevronRight, Heart, MapPin } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { getDefaultAds } from "@/data";
+import { useAds } from "@/features/ads/hooks/useAds";
+import { resolveImageUrl } from "@/utils/image";
 
-const CITIES = ["Casablanca", "Rabat", "Marrakech", "Fès"];
-
-const featuredAds = getDefaultAds()
-  .slice(0, 4)
-  .map((ad, i) => ({
-    id: ad.id,
-    title: ad.title,
-    price: `${ad.price.toLocaleString()} DH`,
-    location: CITIES[i % CITIES.length],
-    image: ad.images[0],
-    category: ad.category,
-    isNew: i % 2 === 0,
-  }));
+const formatDate = (value: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  return date.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
 
 const FeaturedAds = () => {
   const { t } = useLanguage();
+  const { data: ads = [], isLoading, isError } = useAds();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [liked, setLiked] = useState<string[]>([]);
 
-  const next = () => setCurrentIndex((prev) => (prev + 1) % featuredAds.length);
+  const featuredAds = useMemo(
+    () =>
+      ads.slice(0, 4).map((ad, i) => ({
+        id: String(ad.id),
+        title: ad.titre,
+        price: `${ad.prix.toLocaleString()} DH`,
+        location: ad.ville || "Non renseignée",
+        image: resolveImageUrl(ad.photosUrls[0]),
+        category: ad.categorie,
+        isNew: i % 2 === 0,
+        date: formatDate(ad.datepublication),
+      })),
+    [ads],
+  );
+
+  const next = () =>
+    setCurrentIndex((prev) => (featuredAds.length > 0 ? (prev + 1) % featuredAds.length : 0));
   const prev = () =>
-    setCurrentIndex((prev) => (prev - 1 + featuredAds.length) % featuredAds.length);
+    setCurrentIndex((prev) =>
+      featuredAds.length > 0 ? (prev - 1 + featuredAds.length) % featuredAds.length : 0,
+    );
   const toggleLike = (id: string) =>
     setLiked((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [featuredAds.length]);
+
   const current = featuredAds[currentIndex];
+
+  if (isLoading) {
+    return (
+      <section className="py-12">
+        <div className="container">
+          <div className="h-[28rem] rounded-2xl border border-border bg-muted/40 animate-pulse" />
+        </div>
+      </section>
+    );
+  }
+
+  if (isError || featuredAds.length === 0 || !current) {
+    return (
+      <section className="py-12">
+        <div className="container">
+          <div className="rounded-2xl border border-dashed p-10 text-center text-muted-foreground">
+            Impossible de charger les annonces en vedette.
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-12">
@@ -95,6 +139,9 @@ const FeaturedAds = () => {
                     </div>
                     <Badge variant="outline">{current.category}</Badge>
                   </div>
+                  {current.date && (
+                    <p className="text-xs text-muted-foreground mb-2">Publié le {current.date}</p>
+                  )}
                   <p className="text-2xl font-bold text-primary mb-4">{current.price}</p>
                   <Link to={`/ad/${current.id}`} className="block w-full">
                     <button className="w-full py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary-hover transition-colors font-semibold">

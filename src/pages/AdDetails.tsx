@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, MapPin, Calendar, User, MessageCircle, Heart, Share2 } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar, User, MessageCircle, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
@@ -7,10 +7,9 @@ import Footer from "@/components/Footer";
 import StarRating from "@/components/StarRating";
 import Comments from "@/components/Comments";
 import { useState } from "react";
-import { useFavorites } from "@/contexts/FavoritesContext";
-import { useNotification } from "@/hooks/useNotification";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getDefaultAds, getAdById } from "@/data";
+import { FavoriteButton } from "@/features/favorites";
 
 const CITIES = ["Casablanca", "Rabat", "Marrakech", "Fès", "Tanger", "Agadir"];
 const SELLERS = [
@@ -26,18 +25,6 @@ const AdDetails = () => {
   const { t } = useLanguage();
   const { id } = useParams();
   const [currentImage, setCurrentImage] = useState(0);
-  const { isFavorite, toggleFavorite } = useFavorites();
-  const { addNotification } = useNotification();
-  const liked = id ? isFavorite(id) : false;
-  const handleToggleFav = () => {
-    if (!id) return;
-    toggleFavorite(id);
-    addNotification(
-      liked ? t("removed_from_favorites") || "Retiré des favoris" : t("added_to_favorites") || "Ajouté aux favoris",
-      "",
-      "success",
-    );
-  };
 
   const all = getDefaultAds();
   const ad = (id && getAdById(id)) || all[0];
@@ -119,14 +106,13 @@ const AdDetails = () => {
                   <Button className="flex-1 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl font-semibold h-12 gap-2">
                     <MessageCircle className="h-5 w-5" /> {t("contact_seller")}
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-12 w-12 rounded-xl border-secondary/30 hover:bg-secondary/10"
-                    onClick={handleToggleFav}
-                  >
-                    <Heart className={`h-5 w-5 ${liked ? "fill-red-500 text-red-500" : ""}`} />
-                  </Button>
+                  {id && (
+                    <FavoriteButton
+                      annonceId={id}
+                      className="h-12 w-12 rounded-xl border border-secondary/30 bg-background hover:bg-secondary/10"
+                      showCount
+                    />
+                  )}
                   <Button
                     variant="outline"
                     size="icon"

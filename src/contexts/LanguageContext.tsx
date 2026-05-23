@@ -479,6 +479,16 @@ const translations: Translations = {
     en: "Search your favorites...",
     ar: "ابحث في مفضلاتك...",
   },
+  added_to_favorites: {
+    fr: "Ajouter aux favoris",
+    en: "Add to favorites",
+    ar: "إضافة إلى المفضلة",
+  },
+  removed_from_favorites: {
+    fr: "Retirer des favoris",
+    en: "Remove from favorites",
+    ar: "إزالة من المفضلة",
+  },
   no_favorites: {
     fr: "Aucun favori trouvé",
     en: "No favorites found",
@@ -630,6 +640,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useLanguage = (): LanguageContextType => {
   const context = useContext(LanguageContext);
   if (!context) {

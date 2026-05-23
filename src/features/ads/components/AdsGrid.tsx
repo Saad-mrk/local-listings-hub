@@ -6,19 +6,16 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { getDefaultAds } from "@/data";
+import { useAds } from "@/features/ads/hooks/useAds";
+import { resolveImageUrl } from "@/utils/image";
 
-const CITIES = ["Casablanca", "Rabat", "Marrakech", "Fès", "Tanger", "Agadir"];
-
-const mockAds = getDefaultAds().map((ad, i) => ({
-  id: ad.id,
-  title: ad.title,
-  price: ad.price,
-  city: CITIES[i % CITIES.length],
-  image: ad.images[0],
-  date: "Aujourd'hui",
-  category: ad.category,
-}));
+const formatDate = (value: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Non renseignée";
+  }
+  return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+};
 
 const defaultFilters: Filters = {
   priceRange: [0, 1000000],
@@ -39,6 +36,7 @@ const itemVariants = {
 
 const AdsGrid = () => {
   const { t } = useLanguage();
+  const { data: ads = [], isLoading, isError } = useAds();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filters, setFilters] = useState<Filters>(defaultFilters);
 
@@ -57,13 +55,26 @@ const AdsGrid = () => {
   }, [filters]);
 
   const filteredAds = useMemo(() => {
-    return mockAds.filter((ad) => {
-      if (ad.price < filters.priceRange[0] || ad.price > filters.priceRange[1]) return false;
-      if (filters.categories.length > 0 && !filters.categories.includes(ad.category)) return false;
-      if (filters.cities.length > 0 && !filters.cities.includes(ad.city)) return false;
+    return ads.filter((ad) => {
+      if (ad.prix < filters.priceRange[0] || ad.prix > filters.priceRange[1]) return false;
+      if (filters.categories.length > 0 && !filters.categories.includes(ad.categorie)) return false;
+      if (filters.cities.length > 0 && !filters.cities.includes(ad.ville)) return false;
       return true;
     });
-  }, [filters]);
+  }, [ads, filters]);
+
+  const cardAds = useMemo(
+    () =>
+      filteredAds.map((ad) => ({
+        id: String(ad.id),
+        title: ad.titre,
+        price: ad.prix,
+        city: ad.ville || "Non renseignée",
+        image: resolveImageUrl(ad.photosUrls[0]),
+        date: formatDate(ad.datepublication),
+      })),
+    [filteredAds],
+  );
 
   const activeChips = useMemo(() => {
     const chips: { label: string; onRemove: () => void }[] = [];
@@ -167,7 +178,35 @@ const AdsGrid = () => {
           />
           <div className="flex-1">
             <AnimatePresence mode="wait">
-              {filteredAds.length > 0 ? (
+              {isLoading ? (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+                >
+                  {Array.from({ length: 8 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="h-72 rounded-2xl border border-border bg-muted/40 animate-pulse"
+                    />
+                  ))}
+                </motion.div>
+              ) : isError ? (
+                <motion.div
+                  key="error"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center py-16"
+                >
+                  <p className="text-muted-foreground text-lg mb-2">
+                    Impossible de charger les annonces
+                  </p>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Vérifie l’API `/api/Annonce/getall` et la configuration `VITE_API_URL`.
+                  </p>
+                </motion.div>
+              ) : cardAds.length > 0 ? (
                 <motion.div
                   key="grid"
                   className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
@@ -175,7 +214,7 @@ const AdsGrid = () => {
                   initial="hidden"
                   animate="visible"
                 >
-                  {filteredAds.map((ad) => (
+                  {cardAds.map((ad) => (
                     <motion.div key={ad.id} variants={itemVariants} layout>
                       <AdCard {...ad} />
                     </motion.div>

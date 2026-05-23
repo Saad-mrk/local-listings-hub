@@ -1,10 +1,11 @@
-import { Heart, MapPin, ShoppingCart } from "lucide-react";
-import { memo, useCallback, useState } from "react";
+import { MapPin, ShoppingCart } from "lucide-react";
+import { memo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useCart } from "@/hooks/useCart";
 import { useNotification } from "@/hooks/useNotification";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { FavoriteButton } from "@/features/favorites";
 
 interface AdCardProps {
   id: string;
@@ -18,7 +19,6 @@ interface AdCardProps {
 
 const AdCard = ({ id, title, price, city, image, date, seller = "Vendeur" }: AdCardProps) => {
   const { t } = useLanguage();
-  const [liked, setLiked] = useState(false);
   const { addToCart } = useCart();
   const { addNotification } = useNotification();
 
@@ -30,11 +30,6 @@ const AdCard = ({ id, title, price, city, image, date, seller = "Vendeur" }: AdC
     },
     [addNotification, addToCart, id, image, price, seller, title, t],
   );
-
-  const handleToggleLiked = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setLiked((v) => !v);
-  }, []);
 
   return (
     <motion.div
@@ -52,15 +47,11 @@ const AdCard = ({ id, title, price, city, image, date, seller = "Vendeur" }: AdC
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               loading="lazy"
             />
-            <button
-              onClick={handleToggleLiked}
-              aria-label={liked ? "Retirer des favoris" : "Ajouter aux favoris"}
-              className="absolute top-3 right-3 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
-            >
-              <Heart
-                className={`h-5 w-5 transition-colors ${liked ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
-              />
-            </button>
+            <FavoriteButton
+              annonceId={id}
+              className="absolute top-3 right-3 h-9 w-9 bg-background/80 backdrop-blur-sm hover:bg-background"
+              showCount
+            />
           </div>
           <div className="p-4">
             <p className="text-lg font-heading font-bold text-primary">
