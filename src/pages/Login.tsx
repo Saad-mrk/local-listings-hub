@@ -1,16 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/contexts";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuthForm } from "@/features/auth";
+import { Home, Mail, Lock, User, Phone, ArrowRight } from "lucide-react"; // Import d'icônes pour le look
 
 const getLoginErrorMessage = (error: unknown) => {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
+  if (error instanceof Error && error.message) return error.message;
   return "Erreur de connexion";
 };
 
@@ -29,6 +27,7 @@ const Login = () => {
     reset,
     submitRegister,
   } = useAuthForm();
+
   const navigate = useNavigate();
   const { login } = useAuth();
   const { t } = useLanguage();
@@ -38,44 +37,28 @@ const Login = () => {
   const [countdown, setCountdown] = useState(0);
   const intervalRef = useRef<number | null>(null);
 
-  const validateEmail = (email: string) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-  };
+  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleLogin = async () => {
-    // prevent submitting while blocked
     if (isBlocked) return;
-
     setError("");
     setErrorMessage("");
     if (!values.email || !values.password) {
       setError(t("fill_all_fields"));
       return;
     }
-    if (!validateEmail(values.email)) {
-      setError(t("invalid_email"));
-      return;
-    }
-
     try {
       await login(values.email, values.password);
       navigate("/");
-    } catch (error) {
-      const status = (error as { response?: { status?: number } })?.response?.status;
-
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status?: number } };
+      const status = axiosError?.response?.status;
       if (status === 429) {
-        // Too many attempts: start 60s countdown and block form
         setIsBlocked(true);
         setCountdown(60);
-        setErrorMessage(
-          "You have made too many login attempts in the last minute. Please wait 60 seconds before trying again.",
-        );
-      } else if (status === 401) {
-        // Unauthorized: show inline error, keep form enabled
-        setErrorMessage("Incorrect email or password. Please try again.");
+        setErrorMessage("Trop de tentatives. Veuillez patienter 60s.");
       } else {
-        setError(getLoginErrorMessage(error));
+        setErrorMessage("Email ou mot de passe incorrect.");
       }
     }
   };
@@ -86,15 +69,10 @@ const Login = () => {
       setError(t("fill_all_fields"));
       return;
     }
-    if (!validateEmail(values.email)) {
-      setError(t("invalid_email"));
-      return;
-    }
     if (values.password.length < 6) {
       setError(t("password_min"));
       return;
     }
-
     try {
       await submitRegister({
         nom: values.nom,
@@ -103,10 +81,9 @@ const Login = () => {
         password: values.password,
         telephone: values.telephone,
       });
-      sessionStorage.setItem("pendingVerifyEmail", values.email);
       navigate("/verify-email", { state: { email: values.email } });
-    } catch (error) {
-      // Error message handled by hook (state + toast)
+    } catch {
+      // Registration error is handled by useAuthForm's error state
     }
   };
 
@@ -115,25 +92,15 @@ const Login = () => {
     else await handleLogin();
   };
 
-  // Countdown effect: decrement every second while countdown > 0
+  const handleGoogleLogin = () => {
+    window.location.href = "https://localhost:7111/api/auth/google-login";
+  };
+
   useEffect(() => {
-    if (countdown <= 0) {
-      return;
-    }
-
-    // ensure any existing interval is cleared
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-
+    if (countdown <= 0) return;
     intervalRef.current = window.setInterval(() => {
       setCountdown((c) => {
         if (c <= 1) {
-          // clear and reset
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
-          }
           setIsBlocked(false);
           setErrorMessage("");
           return 0;
@@ -141,128 +108,225 @@ const Login = () => {
         return c - 1;
       });
     }, 1000);
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
+    return () => clearInterval(intervalRef.current!);
   }, [countdown]);
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
-      className="min-h-screen bg-background flex items-center justify-center px-4"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12"
     >
-      <div className="w-full max-w-sm">
+      {/* Bouton Home - Remplaçant de BackButton */}
+      <div className="fixed top-6 left-6">
+        <Link to="/">
+          <Button
+            variant="ghost"
+            className="gap-2 text-muted-foreground hover:text-primary transition-colors"
+          >
+            <Home size={18} />
+            <span className="font-medium">Accueil</span>
+          </Button>
+        </Link>
+      </div>
+
+      <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link to="/">
-            <span className="text-3xl font-heading font-extrabold text-primary">LBAL</span>
-          </Link>
-          <p className="text-muted-foreground text-sm mt-2">
+          <motion.div
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            className="inline-block p-3 rounded-2xl bg-primary/10 mb-4"
+          >
+            <span className="text-4xl font-heading font-black text-primary tracking-tighter">
+              LBAL
+            </span>
+          </motion.div>
+          <h1 className="text-2xl font-bold tracking-tight">
             {isRegister ? t("register_title") : t("login_title")}
-          </p>
+          </h1>
+          <p className="text-muted-foreground text-sm mt-2">Heureux de vous revoir parmi nous</p>
         </div>
 
-        <div className="bg-card rounded-2xl border border-border p-6 shadow-card space-y-4">
-          {(errorMessage || error) && (
-            <div
-              role="alert"
-              className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 text-sm text-destructive"
-            >
-              {errorMessage || error}
-            </div>
-          )}
+        <div className="bg-card rounded-3xl border border-border/50 p-8 shadow-xl shadow-primary/5 space-y-5">
+          <AnimatePresence mode="wait">
+            {(errorMessage || error) && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="bg-destructive/10 border border-destructive/20 rounded-xl p-3 text-sm text-destructive font-medium flex items-center gap-2"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+                {errorMessage || error}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {isRegister && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium mb-1.5 block">{t("nom")}</label>
-                <input
-                  type="text"
-                  placeholder={t("nom_placeholder")}
-                  value={values.nom}
-                  onChange={(e) => setNom(e.target.value)}
-                  disabled={isBlocked}
-                  className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          <div className="space-y-4">
+            <AnimatePresence>
+              {isRegister && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="grid grid-cols-2 gap-4 overflow-hidden"
+                >
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+                      {t("nom")}
+                    </label>
+                    <div className="relative">
+                      <User
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        size={16}
+                      />
+                      <input
+                        type="text"
+                        value={values.nom}
+                        onChange={(e) => setNom(e.target.value)}
+                        className="w-full h-11 pl-10 pr-4 rounded-xl bg-muted/30 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none text-sm"
+                        placeholder="Doe"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+                      {t("prenom")}
+                    </label>
+                    <input
+                      type="text"
+                      value={values.prenom}
+                      onChange={(e) => setPrenom(e.target.value)}
+                      className="w-full h-11 px-4 rounded-xl bg-muted/30 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none text-sm"
+                      placeholder="John"
+                    />
+                  </div>
+                  <div className="col-span-2 space-y-1.5">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+                      {t("telephone")}
+                    </label>
+                    <div className="relative">
+                      <Phone
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        size={16}
+                      />
+                      <input
+                        type="tel"
+                        value={values.telephone}
+                        onChange={(e) => setTelephone(e.target.value)}
+                        className="w-full h-11 pl-10 pr-4 rounded-xl bg-muted/30 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none text-sm"
+                        placeholder="06 00 00 00 00"
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+                {t("email")}
+              </label>
+              <div className="relative">
+                <Mail
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  size={16}
                 />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1.5 block">{t("prenom")}</label>
                 <input
-                  type="text"
-                  placeholder={t("prenom_placeholder")}
-                  value={values.prenom}
-                  onChange={(e) => setPrenom(e.target.value)}
+                  type="email"
+                  value={values.email}
+                  onChange={(e) => setEmail(e.target.value)}
                   disabled={isBlocked}
-                  className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <label className="text-sm font-medium mb-1.5 block">{t("telephone")}</label>
-                <input
-                  type="tel"
-                  placeholder={t("telephone_placeholder")}
-                  value={values.telephone}
-                  onChange={(e) => setTelephone(e.target.value)}
-                  disabled={isBlocked}
-                  className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="w-full h-11 pl-10 pr-4 rounded-xl bg-muted/30 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none text-sm"
+                  placeholder="votre@email.com"
                 />
               </div>
             </div>
-          )}
-          <div>
-            <label className="text-sm font-medium mb-1.5 block">{t("email")}</label>
-            <input
-              type="email"
-              placeholder="votre@email.com"
-              value={values.email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isBlocked}
-              className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium mb-1.5 block">{t("password")}</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={values.password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isBlocked}
-              className="w-full h-11 px-4 rounded-xl bg-muted/50 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
-          </div>
 
-          {isRegister && <p className="text-xs text-muted-foreground">{t("verification_note")}</p>}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+                {t("password")}
+              </label>
+              <div className="relative">
+                <Lock
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  size={16}
+                />
+                <input
+                  type="password"
+                  value={values.password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isBlocked}
+                  className="w-full h-11 pl-10 pr-4 rounded-xl bg-muted/30 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none text-sm"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+          </div>
 
           <Button
             onClick={handleSubmit}
             disabled={isLoading || isBlocked}
-            className="w-full h-11 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl font-semibold"
+            className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.98] gap-2"
           >
-            {isBlocked
-              ? `Please wait... (${countdown}s)`
-              : isLoading
-                ? "..."
-                : isRegister
-                  ? t("sign_up")
-                  : t("sign_in")}
+            {isBlocked ? (
+              `Attendez ${countdown}s`
+            ) : isLoading ? (
+              <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                {isRegister ? t("sign_up") : t("sign_in")}
+                <ArrowRight size={18} />
+              </>
+            )}
+          </Button>
+
+          <div className="relative py-1">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border/60" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase tracking-[0.25em] text-muted-foreground">
+              <span className="bg-card px-3">Ou</span>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            onClick={handleGoogleLogin}
+            variant="outline"
+            className="w-full h-12 rounded-xl font-semibold border-border/70 gap-2"
+          >
+            <svg width="20" height="20" viewBox="0 0 48 48">
+              <path
+                fill="#EA4335"
+                d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+              />
+              <path
+                fill="#4285F4"
+                d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+              />
+              <path
+                fill="#34A853"
+                d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+              />
+              <path fill="none" d="M0 0h48v48H0z" />
+            </svg>
+            Continuer avec Google
           </Button>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground mt-5">
+        <p className="text-center text-sm text-muted-foreground mt-8">
           {isRegister ? t("already_have_account") : t("no_account")}{" "}
           <button
             onClick={() => {
               setIsRegister(!isRegister);
               reset();
             }}
-            className="text-primary font-semibold hover:underline"
+            className="text-primary font-bold hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
           >
             {isRegister ? t("sign_in") : t("sign_up")}
           </button>

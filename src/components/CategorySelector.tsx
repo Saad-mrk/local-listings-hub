@@ -2,13 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ChevronDown, Loader } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import axios from "axios";
-
-interface Category {
-  id: number;
-  nom: string;
-  children?: Category[];
-}
+import { useCategories, type CategoryNode } from "@/hooks/useCategories";
 
 interface CategorySelectorProps {
   onSelect: (categoryId: number, categoryName: string) => void;
@@ -17,55 +11,24 @@ interface CategorySelectorProps {
 
 const CategorySelector = ({ onSelect, selectedId }: CategorySelectorProps) => {
   const { t } = useTranslation();
-  const [categories, setCategories] = useState<Category[]>([]);
+  const { data: categories = [], isLoading, error: categoriesError } = useCategories();
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedParent, setSelectedParent] = useState<Category | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [selectedParent, setSelectedParent] = useState<CategoryNode | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch categories from API on component mount
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+    if (categoriesError) {
+      setError(
+        categoriesError instanceof Error
+          ? categoriesError.message
+          : "Failed to load categories from API",
+      );
+    } else {
+      setError(null);
+    }
+  }, [categoriesError]);
 
-        const response = await axios.get<Category[]>("https://localhost:7111/api/Categorie/tree");
-
-        // Vérifier que la réponse est un tableau valide
-        if (!Array.isArray(response.data)) {
-          throw new Error(
-            `Invalid API response format. Expected array, got ${typeof response.data}. ` +
-              `Response: ${JSON.stringify(response.data).substring(0, 100)}`,
-          );
-        }
-
-        // Vérifier que le tableau n'est pas vide (optionnel, mais recommandé)
-        if (response.data.length === 0) {
-          console.warn("Warning: API returned an empty categories array");
-        }
-
-        setCategories(response.data);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to load categories from API";
-
-        console.error("Error fetching categories:", {
-          error: err,
-          message: errorMessage,
-          timestamp: new Date().toISOString(),
-        });
-
-        setError(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchCategories();
-  }, []);
-
-  const handleSelectParent = (category: Category) => {
+  const handleSelectParent = (category: CategoryNode) => {
     if (!category.children || category.children.length === 0) {
       onSelect(category.id, category.nom);
       setSelectedParent(null);
@@ -76,7 +39,7 @@ const CategorySelector = ({ onSelect, selectedId }: CategorySelectorProps) => {
     setSelectedParent(category);
   };
 
-  const handleSelectChild = (child: Category) => {
+  const handleSelectChild = (child: CategoryNode) => {
     onSelect(child.id, child.nom);
     setSelectedParent(null);
     setIsOpen(false);

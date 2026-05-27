@@ -40,6 +40,8 @@ interface FilterSidebarProps {
   onClose: () => void;
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
+  onApply?: () => void;
+  onReset?: () => void;
   activeFilterCount: number;
 }
 
@@ -63,6 +65,8 @@ const FilterSidebar = ({
   onClose,
   filters,
   onFiltersChange,
+  onApply,
+  onReset,
   activeFilterCount,
 }: FilterSidebarProps) => {
   const { t } = useLanguage();
@@ -91,8 +95,9 @@ const FilterSidebar = ({
         ? filters.cities.filter((c) => c !== city)
         : [...filters.cities, city];
       onFiltersChange({ ...filters, cities: updated });
+      if (onApply) onApply();
     },
-    [filters, onFiltersChange],
+    [filters, onFiltersChange, onApply],
   );
 
   const resetFilters = useCallback(() => {
@@ -145,7 +150,10 @@ const FilterSidebar = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={resetFilters}
+                  onClick={() => {
+                    resetFilters();
+                    if (onReset) onReset();
+                  }}
                   className="h-8 w-8 text-muted-foreground hover:text-foreground"
                   title={t("reset")}
                 >
@@ -306,7 +314,13 @@ const FilterSidebar = ({
               <Separator />
 
               <motion.div custom={4} variants={itemVariants} initial="hidden" animate="visible">
-                <Button onClick={onClose} className="w-full font-semibold">
+                <Button
+                  onClick={() => {
+                    if (onApply) onApply();
+                    onClose();
+                  }}
+                  className="w-full font-semibold"
+                >
                   {t("apply_filters")}
                 </Button>
               </motion.div>

@@ -47,4 +47,6 @@ export interface AnnonceDto {
 
   // JSON sérialise les dates en string — toujours typer en string côté client
   datepublication: string;
+  isFollowed?: boolean; // Indique si l'annonce est suivie par l'utilisateur connecté
+  numberoffavorites?: number; // Nombre de fois que l'annonce a été ajoutée aux favoris
 }

@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useUser } from "@/hooks/useUser";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/contexts";
 import { useCart } from "@/hooks/useCart";
 import { useLanguage } from "@/contexts/LanguageContext";
 import NotificationDropdown from "@/features/notifications/components/NotificationDropdown";
@@ -312,7 +312,7 @@ const Navbar = () => {
           if (filters.subCategoryId !== undefined) {
             params.set("subCategory", String(filters.subCategoryId));
           }
-          navigate(`/ads?${params.toString()}`);
+          navigate(`/?${params.toString()}`);
         }}
       />
     </header>

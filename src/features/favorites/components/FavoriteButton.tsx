@@ -1,8 +1,9 @@
 import { Heart, Loader2 } from "lucide-react";
 import { memo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth, useLanguage } from "@/contexts";
 import { useFavorite } from "@/features/favorites/hooks/useFavorite";
 
 interface FavoriteButtonProps {
@@ -10,6 +11,8 @@ interface FavoriteButtonProps {
   className?: string;
   showCount?: boolean;
   ariaLabel?: string;
+  initialIsFavorite?: boolean;
+  initialFavoritesCount?: number;
 }
 
 const FavoriteButton = ({
@@ -17,17 +20,28 @@ const FavoriteButton = ({
   className,
   showCount = true,
   ariaLabel,
+  initialIsFavorite,
+  initialFavoritesCount,
 }: FavoriteButtonProps) => {
   const { t } = useLanguage();
-  const { isFavorite, favoritesCount, isPending, toggleFavorite } = useFavorite(annonceId);
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const { isFavorite, favoritesCount, isPending, toggleFavorite } = useFavorite(annonceId, {
+    isFavorite: initialIsFavorite,
+    favoritesCount: initialFavoritesCount,
+  });
 
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       event.preventDefault();
       event.stopPropagation();
+      if (!isAuthenticated) {
+        navigate("/login");
+        return;
+      }
       toggleFavorite();
     },
-    [toggleFavorite],
+    [isAuthenticated, navigate, toggleFavorite],
   );
 
   return (

@@ -2,98 +2,38 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronRight,
-  User,
-  Users,
-  Baby,
-  Home,
-  Smartphone,
-  Activity,
-  Sparkles,
   LayoutGrid,
   Shirt,
   Footprints,
   Watch,
   Grid3X3,
   Package,
+  Sparkles,
+  User,
+  Users,
+  Baby,
+  Home,
+  Smartphone,
+  Activity,
+  ShoppingBag,
+  Glasses,
+  Heart,
+  Zap,
+  Briefcase,
+  Crown,
+  Star,
+  Gem,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import axios from "axios";
-
-interface Category {
-  id: number;
-  nom: string;
-  children?: Category[];
-}
+import { useCategories } from "@/hooks/useCategories";
 
 interface CategoriesProps {
-  onFilter: (filters: { categoryId?: number; subCategoryId?: number; label: string }) => void;
+  onFilter: (filters: {
+    categoryId?: number | null;
+    subCategoryId?: number | null;
+    label: string;
+  }) => void;
 }
-
-// Fallback local categories (used if API is unreachable)
-const FALLBACK_CATEGORIES: Category[] = [
-  {
-    id: 1,
-    nom: "Femmes",
-    children: [
-      { id: 11, nom: "Vêtements" },
-      { id: 12, nom: "Chaussures" },
-      { id: 13, nom: "Sacs" },
-      { id: 14, nom: "Accessoires" },
-      { id: 15, nom: "Bijoux & montres" },
-    ],
-  },
-  {
-    id: 2,
-    nom: "Hommes",
-    children: [
-      { id: 21, nom: "T-shirts & Polos" },
-      { id: 22, nom: "Vestes & Manteaux" },
-      { id: 23, nom: "Chaussures" },
-      { id: 24, nom: "Casquettes" },
-      { id: 25, nom: "Accessoires" },
-    ],
-  },
-  {
-    id: 3,
-    nom: "Enfants",
-    children: [
-      { id: 31, nom: "Vêtements bébé" },
-      { id: 32, nom: "Vêtements enfant" },
-      { id: 33, nom: "Jouets" },
-      { id: 34, nom: "Chaussures" },
-    ],
-  },
-  {
-    id: 4,
-    nom: "Maison",
-    children: [
-      { id: 41, nom: "Décoration" },
-      { id: 42, nom: "Cuisine" },
-      { id: 43, nom: "Meubles" },
-      { id: 44, nom: "Linge de maison" },
-    ],
-  },
-  {
-    id: 5,
-    nom: "Électronique",
-    children: [
-      { id: 51, nom: "Smartphones" },
-      { id: 52, nom: "Ordinateurs" },
-      { id: 53, nom: "Audio & Casques" },
-      { id: 54, nom: "Accessoires" },
-    ],
-  },
-  {
-    id: 6,
-    nom: "Sport",
-    children: [
-      { id: 61, nom: "Vêtements sport" },
-      { id: 62, nom: "Chaussures sport" },
-      { id: 63, nom: "Équipement" },
-      { id: 64, nom: "Fitness" },
-    ],
-  },
-];
 
 const getCategoryIcon = (name: string) => {
   const n = name.toLowerCase();
@@ -109,37 +49,41 @@ const getCategoryIcon = (name: string) => {
 
 const getSubCategoryIcon = (name: string) => {
   const n = name.toLowerCase();
-  if (n.includes("vêt") || n.includes("vet") || n.includes("shirt") || n.includes("t-shirt")) return Shirt;
-  if (n.includes("chauss")) return Footprints;
-  if (n.includes("access") || n.includes("bijoux") || n.includes("montre")) return Watch;
-  if (n.includes("sac")) return Package;
-  if (n.includes("soin")) return Sparkles;
+
+  // Vêtements
+  if (n.includes("t-shirt") || n.includes("shirt") || n.includes("chemise")) return Shirt;
+  if (n.includes("robe") || n.includes("jupe")) return Crown;
+  if (n.includes("pantalon") || n.includes("jean")) return Briefcase;
+  if (n.includes("veste") || n.includes("manteau") || n.includes("blouson")) return Package;
+  if (n.includes("pull") || n.includes("sweat")) return Shirt;
+
+  // Chaussures
+  if (n.includes("chauss") || n.includes("basket") || n.includes("sneaker")) return Footprints;
+  if (n.includes("botte") || n.includes("sandal")) return Footprints;
+
+  // Accessoires
+  if (n.includes("sac") || n.includes("bag")) return ShoppingBag;
+  if (n.includes("bijou") || n.includes("collier") || n.includes("bague")) return Gem;
+  if (n.includes("montre")) return Watch;
+  if (n.includes("lunette")) return Glasses;
+  if (n.includes("ceinture") || n.includes("écharpe") || n.includes("foulard")) return Star;
+
+  // Beauté & Soins
+  if (n.includes("soin") || n.includes("beauté") || n.includes("cosmé")) return Sparkles;
+  if (n.includes("parfum")) return Heart;
+
+  // Sport
+  if (n.includes("sport") || n.includes("fitness")) return Activity;
+  if (n.includes("running") || n.includes("training")) return Zap;
+
   return LayoutGrid;
 };
 
 const Categories = ({ onFilter }: CategoriesProps) => {
   const { t } = useTranslation();
-  const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
+  const { data: categories = [], isLoading } = useCategories();
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    axios
-      .get<Category[]>("https://localhost:7111/api/Categorie/tree", {
-        signal: controller.signal,
-        timeout: 3000,
-      })
-      .then((response) => {
-        if (Array.isArray(response.data) && response.data.length > 0) {
-          setCategories(response.data);
-        }
-      })
-      .catch(() => {
-        // Silencieux: on garde le fallback local
-      });
-    return () => controller.abort();
-  }, []);
 
   // Fermer au clic à l'extérieur
   useEffect(() => {
@@ -156,10 +100,24 @@ const Categories = ({ onFilter }: CategoriesProps) => {
     setActiveCategory((cur) => (cur === id ? null : id));
   };
 
-  const handleSelection = (catId?: number, subId?: number, label = "") => {
+  const handleSelection = (catId: number | null, subId: number | null, label = "") => {
     onFilter({ categoryId: catId, subCategoryId: subId, label });
     setActiveCategory(null);
   };
+
+  if (isLoading) {
+    return (
+      <div className="relative z-40 bg-background border-b border-border w-full">
+        <div className="container relative">
+          <div className="flex items-center gap-8 h-14 overflow-visible">
+            <div className="text-muted-foreground text-sm animate-pulse">
+              Chargement des catégories...
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative z-40 bg-background border-b border-border w-full">
@@ -167,64 +125,77 @@ const Categories = ({ onFilter }: CategoriesProps) => {
         <div className="flex items-center gap-8 h-14 overflow-visible whitespace-nowrap">
           {categories.map((cat) => {
             const isActive = activeCategory === cat.id;
+            const CategoryIcon = getCategoryIcon(cat.nom);
 
             return (
               <div key={cat.id} className="h-full flex items-center shrink-0">
                 <button
                   type="button"
                   onClick={() => toggle(cat.id)}
-                  className={`relative h-full px-1 text-base font-medium transition-colors ${
+                  className={`relative h-full px-1 text-base font-medium transition-colors flex items-center gap-2 ${
                     isActive
                       ? "text-foreground after:absolute after:left-0 after:right-0 after:bottom-0 after:h-0.5 after:bg-primary"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
+                  <CategoryIcon className="h-5 w-5" />
                   <span>{t(cat.nom)}</span>
                 </button>
 
                 <AnimatePresence>
                   {isActive && (
                     <motion.div
-                      initial={{ opacity: 0, y: 6 }}
+                      initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 6 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute left-0 right-0 top-full z-[999] min-h-[320px] bg-popover text-popover-foreground border-t border-border shadow-2xl"
+                      exit={{ opacity: 0, y: 8 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      className="absolute left-0 right-0 top-full z-[999] bg-popover/95 backdrop-blur-lg text-popover-foreground border-t border-border shadow-xl"
                     >
-                      <div className="container py-7">
-                        <div className="w-full max-w-sm space-y-1">
+                      <div className="container py-6">
+                        <div className="w-full max-w-4xl mx-auto">
+                          {/* Bouton "Voir tout" en vedette */}
                           <button
                             type="button"
-                            onClick={() => handleSelection(cat.id, undefined, cat.nom)}
-                            className="group flex w-full items-center gap-4 px-3 py-2.5 text-left text-lg font-medium text-muted-foreground hover:text-primary"
+                            onClick={() => handleSelection(cat.id, 0, cat.nom)}
+                            className="group flex items-center gap-3 px-4 py-3 mb-4 w-full rounded-lg bg-primary/10 hover:bg-primary/20 transition-all duration-200"
                           >
-                            <Grid3X3 className="h-6 w-6 text-primary" />
-                            <span>{t("Voir tout")}</span>
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/20">
+                              <Grid3X3 className="h-5 w-5 text-primary" />
+                            </div>
+                            <span className="text-base font-semibold text-foreground">
+                              {t("Voir tout")} {t(cat.nom)}
+                            </span>
+                            <ChevronRight className="h-5 w-5 ml-auto text-primary group-hover:translate-x-1 transition-transform" />
                           </button>
 
-                          {cat.children?.map((sub, index) => {
-                            const SubIcon = getSubCategoryIcon(sub.nom);
-                            const hasChildren = Boolean(sub.children?.length);
+                          {/* Grille des sous-catégories */}
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                            {cat.children?.map((sub) => {
+                              const SubIcon = getSubCategoryIcon(sub.nom);
+                              const hasChildren = Boolean(sub.children?.length);
 
-                            return (
-                              <button
-                                key={sub.id}
-                                type="button"
-                                onClick={() => handleSelection(undefined, sub.id, sub.nom)}
-                                className={`group flex w-full items-center gap-4 px-3 py-2.5 text-left text-lg transition-colors hover:text-primary ${
-                                  index === 0
-                                    ? "font-bold text-foreground"
-                                    : "font-medium text-muted-foreground"
-                                }`}
-                              >
-                                <SubIcon className="h-6 w-6 text-primary" />
-                                <span className="flex-1">{t(sub.nom)}</span>
-                                {hasChildren && (
-                                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
-                                )}
-                              </button>
-                            );
-                          })}
+                              return (
+                                <button
+                                  key={sub.id}
+                                  type="button"
+                                  onClick={() => handleSelection(cat.id, sub.id, sub.nom)}
+                                  className="group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 hover:bg-accent hover:scale-[1.02]"
+                                >
+                                  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                                    <SubIcon className="h-4.5 w-4.5 text-primary" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                                      {t(sub.nom)}
+                                    </span>
+                                  </div>
+                                  {hasChildren && (
+                                    <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity absolute right-2 top-1/2 -translate-y-1/2" />
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
                       </div>
                     </motion.div>

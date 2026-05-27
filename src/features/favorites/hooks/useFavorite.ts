@@ -1,13 +1,13 @@
 import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/contexts";
 import { favoritesApi } from "@/features/favorites/api/favorites.api";
 import type { FavoriteRecord, FavoritesState } from "@/features/favorites/types";
 
 const FAVORITES_STORAGE_KEY = "lbal:favorites:v1";
 const FAVORITES_QUERY_KEY = ["favorites", "state"] as const;
 
-const defaultRecord: FavoriteRecord = {
+const baseDefaultRecord: FavoriteRecord = {
   isFavorite: false,
   favoritesCount: 0,
   updatedAt: "",
@@ -82,14 +82,29 @@ export const useFavoritesState = () => {
   });
 };
 
-export const useFavorite = (annonceId?: string | number) => {
+export const useFavorite = (
+  annonceId?: string | number,
+  initialFallback?: { isFavorite?: boolean; favoritesCount?: number },
+) => {
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuth();
   const normalizedId = annonceId === undefined || annonceId === null ? null : String(annonceId);
 
+  const defaultRecord = useMemo(
+    () => ({
+      ...baseDefaultRecord,
+      isFavorite: isAuthenticated
+        ? (initialFallback?.isFavorite ?? baseDefaultRecord.isFavorite)
+        : baseDefaultRecord.isFavorite,
+      favoritesCount: initialFallback?.favoritesCount ?? baseDefaultRecord.favoritesCount,
+    }),
+    [initialFallback?.favoritesCount, initialFallback?.isFavorite, isAuthenticated],
+  );
+
   const favoriteRecordQuery = useQuery({
     queryKey: FAVORITES_QUERY_KEY,
     queryFn: loadFavoritesState,
+    enabled: isAuthenticated,
     staleTime: Infinity,
     gcTime: Infinity,
     refetchOnWindowFocus: false,
@@ -97,11 +112,13 @@ export const useFavorite = (annonceId?: string | number) => {
     select: useMemo(
       () => (state: FavoritesState) =>
         normalizedId ? (state[normalizedId] ?? defaultRecord) : defaultRecord,
-      [normalizedId],
+      [normalizedId, defaultRecord],
     ),
   });
 
-  const favoriteRecord = favoriteRecordQuery.data ?? defaultRecord;
+  const favoriteRecord = !isAuthenticated
+    ? defaultRecord
+    : (favoriteRecordQuery.data ?? defaultRecord);
 
   const mutation = useMutation({
     mutationFn: async (nextValue: boolean) => {
@@ -168,7 +185,7 @@ export const useFavorite = (annonceId?: string | number) => {
       ? (latestState[normalizedId] ?? defaultRecord)
       : defaultRecord;
     setFavorite(!latestRecord.isFavorite);
-  }, [mutation.isPending, normalizedId, queryClient, setFavorite]);
+  }, [mutation.isPending, normalizedId, queryClient, setFavorite, defaultRecord]);
 
   return {
     isFavorite: favoriteRecord.isFavorite,

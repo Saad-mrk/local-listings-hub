@@ -1,9 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { adsApi } from "@/api/ads.api";
 
-export const useAds = () => {
+export const useAds = (filters?: {
+  categoryId?: number;
+  subCategoryId?: number;
+  ville?: string | null;
+}) => {
   return useQuery({
-    queryKey: ["ads"],
-    queryFn: adsApi.getAll,
+    queryKey: ["ads", filters ?? {}],
+    queryFn: () => adsApi.getAll(filters),
   });
 };

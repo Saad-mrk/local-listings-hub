@@ -1,10 +1,11 @@
-import { ChevronLeft, ChevronRight, Heart, MapPin } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAds } from "@/features/ads/hooks/useAds";
+import { FavoriteButton } from "@/features/favorites";
 import { resolveImageUrl } from "@/utils/image";
 
 const formatDate = (value: string) => {
@@ -23,7 +24,6 @@ const FeaturedAds = () => {
   const { t } = useLanguage();
   const { data: ads = [], isLoading, isError } = useAds();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [liked, setLiked] = useState<string[]>([]);
 
   const featuredAds = useMemo(
     () =>
@@ -36,6 +36,8 @@ const FeaturedAds = () => {
         category: ad.categorie,
         isNew: i % 2 === 0,
         date: formatDate(ad.datepublication),
+        favoritesCount: ad.numberoffavorites,
+        isFollowed: ad.isFollowed,
       })),
     [ads],
   );
@@ -46,8 +48,6 @@ const FeaturedAds = () => {
     setCurrentIndex((prev) =>
       featuredAds.length > 0 ? (prev - 1 + featuredAds.length) % featuredAds.length : 0,
     );
-  const toggleLike = (id: string) =>
-    setLiked((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   useEffect(() => {
     setCurrentIndex(0);
@@ -119,16 +119,15 @@ const FeaturedAds = () => {
                   {current.isNew && (
                     <Badge className="absolute top-4 left-4 bg-primary">{t("new")}</Badge>
                   )}
-                  <motion.button
-                    onClick={() => toggleLike(current.id)}
-                    className="absolute top-4 right-4 p-2 rounded-full bg-white/90 hover:bg-white transition-colors"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Heart
-                      className={`h-5 w-5 ${liked.includes(current.id) ? "fill-red-500 text-red-500" : "text-gray-400"}`}
+                  <div className="absolute top-4 right-4">
+                    <FavoriteButton
+                      annonceId={current.id}
+                      className="p-2 rounded-full bg-white/90 hover:bg-white transition-colors"
+                      showCount={false}
+                      initialIsFavorite={current.isFollowed}
+                      initialFavoritesCount={current.favoritesCount}
                     />
-                  </motion.button>
+                  </div>
                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-bold mb-2">{current.title}</h3>

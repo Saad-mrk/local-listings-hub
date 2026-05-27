@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAds } from "@/features/ads/hooks/useAds";
-import { FavoriteButton, useFavoritesState } from "@/features/favorites";
+import { useFavoriteAds } from "@/features/ads/hooks/useFavoriteAds";
+import { FavoriteButton } from "@/features/favorites";
 import { resolveImageUrl } from "@/utils/image";
 
 interface FavoriteAd {
@@ -20,6 +20,8 @@ interface FavoriteAd {
   date: string;
   image: string;
   category: string;
+  isFollowed?: boolean;
+  numberoffavorites?: number;
 }
 
 const formatDate = (value: string) => {
@@ -62,6 +64,8 @@ const FavoriteCard = memo(function FavoriteCard({
             className="absolute top-3 right-3 h-9 w-9 bg-card/80 backdrop-blur-sm hover:bg-card"
             showCount={false}
             ariaLabel="Retirer des favoris"
+            initialIsFavorite={ad.isFollowed}
+            initialFavoritesCount={ad.numberoffavorites}
           />
           <span className="absolute bottom-3 left-3 bg-card/80 backdrop-blur-sm text-xs px-2.5 py-1 rounded-full font-medium">
             {ad.category}
@@ -70,6 +74,9 @@ const FavoriteCard = memo(function FavoriteCard({
         <div className="p-4">
           <h3 className="font-semibold text-sm truncate">{ad.title}</h3>
           <p className="text-primary font-bold mt-1">{ad.price.toLocaleString()} DH</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Favoris : {ad.numberoffavorites ?? 0}
+          </p>
           <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">
             <span className="flex items-center gap-1">
               <MapPin className="h-3 w-3" />
@@ -117,6 +124,8 @@ const FavoriteCard = memo(function FavoriteCard({
         className="shrink-0 h-10 w-10 rounded-full border border-border bg-background hover:bg-destructive/10 hover:text-destructive"
         showCount={false}
         ariaLabel="Retirer des favoris"
+        initialIsFavorite={ad.isFollowed}
+        initialFavoritesCount={ad.numberoffavorites}
       />
     </Link>
   );
@@ -126,35 +135,21 @@ const Favorites = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const { t } = useLanguage();
-  const { data: ads = [], isLoading } = useAds();
-  const { data: favoritesState = {} } = useFavoritesState();
-
-  const favoriteIds = useMemo(
-    () =>
-      Object.entries(favoritesState)
-        .filter(([, record]) => record.isFavorite)
-        .map(([id]) => id),
-    [favoritesState],
-  );
+  const { data: favoriteAds = [], isLoading } = useFavoriteAds();
 
   const favorites = useMemo<FavoriteAd[]>(() => {
-    return favoriteIds
-      .map((id) => {
-        const ad = ads.find((item) => String(item.id) === id);
-        if (!ad) return null;
-
-        return {
-          id: String(ad.id),
-          title: ad.titre,
-          price: ad.prix,
-          city: ad.ville || "Non renseignée",
-          date: formatDate(ad.datepublication),
-          image: resolveImageUrl(ad.photosUrls[0]),
-          category: ad.categorie,
-        } as FavoriteAd;
-      })
-      .filter((item): item is FavoriteAd => item !== null);
-  }, [ads, favoriteIds]);
+    return favoriteAds.map((ad) => ({
+      id: String(ad.id),
+      title: ad.titre,
+      price: ad.prix,
+      city: ad.ville || "Non renseignée",
+      date: formatDate(ad.datepublication),
+      image: resolveImageUrl(ad.photosUrls[0]),
+      category: ad.categorie,
+      isFollowed: ad.isFollowed,
+      numberoffavorites: ad.numberoffavorites,
+    }));
+  }, [favoriteAds]);
 
   const filtered = useMemo(
     () =>

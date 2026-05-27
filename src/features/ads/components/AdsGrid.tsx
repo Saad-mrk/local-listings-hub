@@ -1,8 +1,9 @@
 import { useState, useMemo, useCallback } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import AdCard from "./AdCard";
 import FilterSidebar, { type Filters } from "@/components/search/FilterSidebar";
 import { motion, AnimatePresence } from "framer-motion";
-import { SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal, X, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -36,13 +37,37 @@ const itemVariants = {
 
 const AdsGrid = () => {
   const { t } = useLanguage();
-  const { data: ads = [], isLoading, isError } = useAds();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const categoryId = searchParams.get("category");
+  const subCategoryId = searchParams.get("subCategory");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filters, setFilters] = useState<Filters>(defaultFilters);
 
+  const villeFromFilters = filters.cities && filters.cities.length > 0 ? filters.cities[0] : null;
+  const villeFromParams = searchParams.get("ville");
+  const villeToSend = villeFromFilters ?? (villeFromParams !== null ? villeFromParams : undefined);
+
+  const {
+    data: ads = [],
+    isLoading,
+    isError,
+    error,
+  } = useAds({
+    categoryId: categoryId !== null ? Number(categoryId) : 0,
+    subCategoryId: subCategoryId !== null ? Number(subCategoryId) : 0,
+    ville: villeToSend ?? undefined,
+  });
+
   const openSidebar = useCallback(() => setSidebarOpen(true), []);
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
-  const clearAllFilters = useCallback(() => setFilters(defaultFilters), []);
+  const clearAllFilters = useCallback(() => {
+    setFilters(defaultFilters);
+    const params = new URLSearchParams();
+    params.set("category", "0");
+    params.set("subCategory", "0");
+    navigate(`/?${params.toString()}`);
+  }, [navigate]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -63,6 +88,13 @@ const AdsGrid = () => {
     });
   }, [ads, filters]);
 
+  const noResultsMessage = useMemo(() => {
+    if (categoryId || subCategoryId || activeFilterCount > 0) {
+      return "Aucune annonce ne correspond à ces critères.";
+    }
+    return t("no_ads_found");
+  }, [categoryId, subCategoryId, activeFilterCount, t]);
+
   const cardAds = useMemo(
     () =>
       filteredAds.map((ad) => ({
@@ -72,6 +104,8 @@ const AdsGrid = () => {
         city: ad.ville || "Non renseignée",
         image: resolveImageUrl(ad.photosUrls[0]),
         date: formatDate(ad.datepublication),
+        favoritesCount: ad.numberoffavorites,
+        isFollowed: ad.isFollowed,
       })),
     [filteredAds],
   );
@@ -174,6 +208,16 @@ const AdsGrid = () => {
             onClose={closeSidebar}
             filters={filters}
             onFiltersChange={setFilters}
+            onApply={() => {
+              const params = new URLSearchParams();
+              params.set("category", String(categoryId !== null ? Number(categoryId) : 0));
+              params.set("subCategory", String(subCategoryId !== null ? Number(subCategoryId) : 0));
+              if (filters.cities && filters.cities.length > 0) {
+                params.set("ville", String(filters.cities[0]));
+              }
+              navigate(`/?${params.toString()}`);
+            }}
+            onReset={clearAllFilters}
             activeFilterCount={activeFilterCount}
           />
           <div className="flex-1">
@@ -193,19 +237,49 @@ const AdsGrid = () => {
                   ))}
                 </motion.div>
               ) : isError ? (
-                <motion.div
-                  key="error"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-center py-16"
-                >
-                  <p className="text-muted-foreground text-lg mb-2">
-                    Impossible de charger les annonces
-                  </p>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Vérifie l’API `/api/Annonce/getall` et la configuration `VITE_API_URL`.
-                  </p>
-                </motion.div>
+                (() => {
+                  const axiosErr = error as { response?: { status?: number } } | null;
+                  if (axiosErr?.response?.status === 404) {
+                    return (
+                      <motion.div
+                        key="not-found"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-center py-16"
+                      >
+                        <div className="mx-auto mb-6 w-20 h-20 rounded-full bg-muted/40 flex items-center justify-center">
+                          <Search className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                        <h3 className="text-2xl font-semibold mb-2">Aucune annonce trouvée</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Aucune annonce ne correspond à cette catégorie. Veuillez changer de
+                          catégorie ou essayer d'autres produits.
+                        </p>
+                        <div className="flex items-center justify-center gap-3">
+                          <Button variant="outline" onClick={clearAllFilters}>
+                            Effacer les filtres
+                          </Button>
+                        </div>
+                      </motion.div>
+                    );
+                  }
+
+                  return (
+                    <motion.div
+                      key="error"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-center py-16"
+                    >
+                      <p className="text-muted-foreground text-lg mb-2">
+                        Impossible de charger les annonces
+                      </p>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Vérifie l’API `/api/Annonce/getall` et la configuration `VITE_API_URL`.
+                      </p>
+                    </motion.div>
+                  );
+                })()
               ) : cardAds.length > 0 ? (
                 <motion.div
                   key="grid"
@@ -228,7 +302,7 @@ const AdsGrid = () => {
                   exit={{ opacity: 0, y: -20 }}
                   className="text-center py-16"
                 >
-                  <p className="text-muted-foreground text-lg mb-2">{t("no_ads_found")}</p>
+                  <p className="text-muted-foreground text-lg mb-2">{noResultsMessage}</p>
                   <p className="text-sm text-muted-foreground mb-4">
                     {t("try_different_criteria")}
                   </p>

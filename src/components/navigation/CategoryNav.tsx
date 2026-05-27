@@ -2,13 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Loader } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import axios from "axios";
-
-interface Category {
-  id: number;
-  nom: string;
-  children?: Category[];
-}
+import { useCategories } from "@/hooks/useCategories";
 
 interface CategoryNavBarProps {
   onFilter: (filters: { categoryId?: number; subCategoryId?: number; label: string }) => void;
@@ -16,23 +10,8 @@ interface CategoryNavBarProps {
 
 const CategoryNav = ({ onFilter }: CategoryNavBarProps) => {
   const { t } = useTranslation();
-  const [categories, setCategories] = useState<Category[]>([]);
+  const { data: categories = [], isLoading } = useCategories();
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await axios.get<Category[]>("https://localhost:7111/api/Categorie/tree");
-        setCategories(response.data);
-      } catch (err) {
-        console.error("Erreur API", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchCategories();
-  }, []);
 
   // Fermer le menu après une sélection
   const handleSelection = (catId?: number, subId?: number, label: string = "") => {

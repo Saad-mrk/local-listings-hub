@@ -5,6 +5,7 @@ import { ProtectedRoute } from "@/routes/ProtectedRoute";
 const Index = lazy(() => import("@/pages/Index"));
 const AdDetails = lazy(() => import("@/pages/AdDetails"));
 const Login = lazy(() => import("@/pages/Login"));
+const AuthCallback = lazy(() => import("@/pages/AuthCallback"));
 const VerifyEmail = lazy(() => import("@/pages/VerifyEmail"));
 const CreateAd = lazy(() => import("@/pages/CreateAd"));
 const UserDashboard = lazy(() => import("@/pages/UserDashboard"));
@@ -30,6 +31,7 @@ export const AppRouter = () => {
         <Route path="/" element={<Index />} />
         <Route path="/ad/:id" element={<AdDetails />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route
           path="/create"

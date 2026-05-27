@@ -3,14 +3,17 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useNavigate } from "react-router-dom";
 
-const cities = ["Casablanca", "Rabat", "Marrakech", "Fès", "Tanger", "Agadir"];
+const cities = ["Casablanca", "Rabat", "Marrakech", "Fes", "Tanger", "Agadir"];
 
 const HeroSearch = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [displayedText, setDisplayedText] = useState("");
   const fullText = t("hero_title");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
 
   useEffect(() => {
     setDisplayedText("");
@@ -25,6 +28,20 @@ const HeroSearch = () => {
     }, 50);
     return () => clearInterval(interval);
   }, [fullText]);
+
+  const handleSearch = (city = selectedCity) => {
+    const params = new URLSearchParams();
+    if (searchQuery.trim()) params.set("search", searchQuery.trim());
+    if (city) params.set("ville", city);
+    const target = params.toString() ? `/?${params.toString()}` : "/";
+    navigate(target);
+  };
+
+  const submitSearch = () => handleSearch();
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleSearch();
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -84,6 +101,7 @@ const HeroSearch = () => {
               placeholder={t("hero_search_placeholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
               className="w-full h-12 pl-11 pr-4 rounded-xl bg-muted/50 border border-secondary/15 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-all hover:border-secondary/30"
             />
             {searchQuery && (
@@ -95,7 +113,14 @@ const HeroSearch = () => {
                 <p className="text-xs text-muted-foreground px-2 py-1">
                   {t("popular_suggestions")}
                 </p>
-                <button className="w-full text-left px-3 py-2 text-sm hover:bg-secondary/10 rounded-lg transition-colors">
+                <button
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-secondary/10 rounded-lg transition-colors"
+                  onClick={() => {
+                    const nextCity = "Casablanca";
+                    setSelectedCity(nextCity);
+                    handleSearch(nextCity);
+                  }}
+                >
                   {searchQuery} à Casablanca
                 </button>
               </motion.div>
@@ -104,7 +129,15 @@ const HeroSearch = () => {
 
           <div className="relative flex-1 sm:max-w-[200px]">
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-secondary" />
-            <select className="w-full h-12 pl-11 pr-4 rounded-xl bg-muted/50 border border-secondary/15 text-sm text-muted-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-secondary/30 cursor-pointer transition-all hover:border-secondary/30">
+            <select
+              value={selectedCity}
+              onChange={(e) => {
+                const nextCity = e.target.value;
+                setSelectedCity(nextCity);
+                handleSearch(nextCity);
+              }}
+              className="w-full h-12 pl-11 pr-4 rounded-xl bg-muted/50 border border-secondary/15 text-sm text-muted-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-secondary/30 cursor-pointer transition-all hover:border-secondary/30"
+            >
               <option value="">{t("all_cities")}</option>
               {cities.map((city) => (
                 <option key={city} value={city}>
@@ -114,7 +147,10 @@ const HeroSearch = () => {
             </select>
           </div>
 
-          <Button className="h-12 px-8 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl font-semibold text-base transition-all hover:shadow-lg">
+          <Button
+            onClick={submitSearch}
+            className="h-12 px-8 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl font-semibold text-base transition-all hover:shadow-lg"
+          >
             <Search className="h-5 w-5 mr-2" />
             {t("search")}
           </Button>

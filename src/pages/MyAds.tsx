@@ -157,6 +157,8 @@ const MyAds = () => {
                           day: "numeric",
                           month: "short",
                         })}
+                        favoritesCount={ad.numberoffavorites}
+                        isFollowed={ad.isFollowed}
                         // Note: Tu pourrais ajouter une prop "status" à AdCard pour afficher un badge
                       />
                     </motion.div>

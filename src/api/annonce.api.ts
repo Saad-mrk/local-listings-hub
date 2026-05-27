@@ -11,6 +11,7 @@ export interface CreateAnnonceRequest {
   prix: number;
   idCategorie: number;
   idSousCategorie: number;
+  localisationVille?: string;
   etat: string;
   statut: "draft" | "published";
   Images: File[]; // Doit absolument être un tableau de fichiers natifs
@@ -32,6 +33,7 @@ export const buildAnnonceFormData = (payload: CreateAnnonceRequest) => {
   formData.append("Prix", String(payload.prix).replace(",", "."));
   formData.append("IdCategorie", String(payload.idCategorie));
   formData.append("IdSousCategorie", String(payload.idSousCategorie));
+  formData.append("LocalisationVille", payload.localisationVille ? payload.localisationVille : "");
   formData.append("Etat", payload.etat ? payload.etat.toLowerCase() : "");
   formData.append("Statut", payload.statut ? payload.statut.toLowerCase() : "draft");
 

@@ -22,6 +22,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import axios from "axios";
 import { cn } from "@/lib/utils";
 import { annonceApi } from "@/api/annonce.api";
+import { env } from "@/config/env";
 
 interface CategoryNode {
   id: number;
@@ -74,7 +75,7 @@ const ATTR_IDS = {
   color: 3,
 } as const;
 
-const CATEGORY_ENDPOINT = "https://localhost:7111/api/Categorie/tree";
+const CATEGORY_ENDPOINT = `${env.apiUrl || "https://localhost:7111"}/api/Categorie/tree`;
 
 const CreateAd = () => {
   const navigate = useNavigate();
@@ -366,6 +367,7 @@ const CreateAd = () => {
         prix: Number(price),
         idCategorie: selectedCategory!.id,
         idSousCategorie: selectedSubcategory!.id,
+        localisationVille: city,
         etat: conditionValue,
         statut: status === "draft" ? "draft" : "published",
         Images: images.map((image) => image.file),

@@ -15,9 +15,21 @@ interface AdCardProps {
   image: string;
   date: string;
   seller?: string;
+  favoritesCount?: number;
+  isFollowed?: boolean;
 }
 
-const AdCard = ({ id, title, price, city, image, date, seller = "Vendeur" }: AdCardProps) => {
+const AdCard = ({
+  id,
+  title,
+  price,
+  city,
+  image,
+  date,
+  seller = "Vendeur",
+  favoritesCount,
+  isFollowed,
+}: AdCardProps) => {
   const { t } = useLanguage();
   const { addToCart } = useCart();
   const { addNotification } = useNotification();
@@ -51,6 +63,8 @@ const AdCard = ({ id, title, price, city, image, date, seller = "Vendeur" }: AdC
               annonceId={id}
               className="absolute top-3 right-3 h-9 w-9 bg-background/80 backdrop-blur-sm hover:bg-background"
               showCount
+              initialIsFavorite={isFollowed}
+              initialFavoritesCount={favoritesCount}
             />
           </div>
           <div className="p-4">
