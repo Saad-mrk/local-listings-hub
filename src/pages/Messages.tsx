@@ -1,188 +1,416 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
-import { HubConnection } from "@microsoft/signalr";
-import {
-  buildNotificationConnection,
-  getNotifications,
-  getCountNonLues,
-  marquerLue,
-  marquerToutesLues,
-} from "@/services/notificationService";
-import { useAuth } from "@/contexts/AuthContext";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Send, ArrowLeft, Phone, MoreVertical, Search, Image } from "lucide-react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { conversationApi, messageApi } from "@/api";
+import { useUser } from "@/hooks/useUser";
+import type { ConversationDto } from "@/types/conversation.types";
+import type { CreateMessageRequest, MessageDto } from "@/types/message.types";
 
-// --- Typage ---
+const convItemVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: { delay: i * 0.05, duration: 0.35, ease: [0.22, 1, 0.36, 1] as const },
+  }),
+};
 
-export interface NotificationDto {
-  id: number; // Changé de optional à requis pour éviter les soucis de clé (key)
-  type: "MESSAGE" | "FAVORI" | "ANNONCE";
-  titre: string;
-  contenu: string;
-  lienAction?: string;
-  estLue: boolean;
-  dateCreation: string;
-}
+const messageVariants = {
+  hidden: (sender: boolean) => ({ opacity: 0, x: sender ? 30 : -30, scale: 0.95 }),
+  visible: () => ({
+    opacity: 1,
+    x: 0,
+    scale: 1,
+    transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] as const },
+  }),
+};
 
-// ✅ Interface pour typer les données brutes provenant de l'API ou SignalR
-interface RawNotification {
-  id?: number;
-  Id?: number;
-  idNotification?: number;
-  type?: string;
-  Type?: string;
-  notificationType?: string;
-  TypeNotification?: string;
-  titre?: string;
-  Titre?: string;
-  title?: string;
-  contenu?: string;
-  Contenu?: string;
-  content?: string;
-  lienAction?: string | null;
-  LienAction?: string | null;
-  link?: string | null;
-  estLue?: boolean;
-  est_lu?: boolean;
-  dateCreation?: string;
-  DateCreation?: string;
-  date_creation?: string;
-}
+const formatTimeAgo = (dateString: string) => {
+  const date = new Date(dateString);
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
 
-type NotificationAddType = NotificationDto["type"] | "info" | "success" | "warning" | "error";
+  if (seconds < 60) return "À l'instant";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `Il y a ${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `Il y a ${hours}h`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `Il y a ${days}j`;
+  return date.toLocaleDateString("fr-FR");
+};
 
-interface NotificationContextValue {
-  notifs: NotificationDto[];
-  unreadCount: number;
-  nonLues: number;
-  markAsRead: (id: number) => Promise<void>;
-  markAllAsRead: () => Promise<void>;
-  addNotification: (titre: string, contenu?: string, type?: NotificationAddType) => void;
-}
+const Messages = () => {
+  const [conversations, setConversations] = useState<ConversationDto[]>([]);
+  const [selectedConvId, setSelectedConvId] = useState<number | null>(null);
+  const [messages, setMessages] = useState<MessageDto[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loadingConversations, setLoadingConversations] = useState(false);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { t } = useLanguage();
+  const { user } = useUser();
 
-const NotificationContext = createContext<NotificationContextValue | null>(null);
+  const currentUserId = useMemo<number | null>(() => {
+    if (!user) return null;
+    const parsed = Number(user.id);
+    return Number.isFinite(parsed) ? parsed : null;
+  }, [user]);
 
-// --- Provider ---
+  const activeConv = useMemo(
+    () => conversations.find((conv) => conv.idConversation === selectedConvId) ?? null,
+    [conversations, selectedConvId],
+  );
 
-export const NotificationProvider = ({ children }: { children: React.ReactNode }) => {
-  const { accessToken } = useAuth();
-  const [notifs, setNotifs] = useState<NotificationDto[]>([]);
-  const [serverUnreadCount, setServerUnreadCount] = useState<number | null>(null);
-  const connRef = useRef<HubConnection | null>(null);
+  const filteredConversations = useMemo(
+    () =>
+      conversations.filter((conv) => {
+        const name =
+          `${conv.prenomAutreUtilisateur ?? ""} ${conv.nomAutreUtilisateur ?? ""}`.trim();
+        return name.toLowerCase().includes(searchQuery.toLowerCase());
+      }),
+    [conversations, searchQuery],
+  );
 
-  // ✅ Suppression du "any" : On utilise l'interface RawNotification
-  const normalizeNotification = (item: RawNotification): NotificationDto => {
-    const typeValue =
-      item.type ?? item.Type ?? item.notificationType ?? item.TypeNotification ?? "MESSAGE";
+  const loadConversations = useCallback(async () => {
+    setLoadingConversations(true);
+    setError(null);
 
-    const rawType = String(typeValue).toUpperCase();
-    const type: NotificationDto["type"] = 
-      rawType === "FAVORI" || rawType === "ANNONCE" ? rawType : "MESSAGE";
+    try {
+      const response = await conversationApi.getMyConversations();
+      setConversations(response);
+      if (response.length > 0 && selectedConvId === null) {
+        setSelectedConvId(response[0].idConversation);
+      }
+    } catch (err: unknown) {
+      setError("Impossible de charger vos conversations.");
+      console.error(err);
+    } finally {
+      setLoadingConversations(false);
+    }
+  }, [selectedConvId]);
 
-    return {
-      id: item.id ?? item.Id ?? item.idNotification ?? Date.now(),
-      type,
-      titre: item.titre ?? item.Titre ?? item.title ?? "",
-      contenu: item.contenu ?? item.Contenu ?? item.content ?? "",
-      lienAction: (item.lienAction ?? item.LienAction ?? item.link) || undefined,
-      estLue: typeof item.estLue === "boolean" ? item.estLue : !!item.est_lu,
-      dateCreation:
-        item.dateCreation ?? item.DateCreation ?? item.date_creation ?? new Date().toISOString(),
-    };
-  };
+  const markMessagesRead = useCallback(
+    async (fetchedMessages: MessageDto[]) => {
+      const unreadMessages = fetchedMessages.filter((message) => {
+        const isMine =
+          currentUserId !== null ? message.idExpediteur === currentUserId : message.estMonMessage;
+        return !message.est_lu && !isMine;
+      });
+
+      await Promise.all(
+        unreadMessages.map(async (message) => {
+          try {
+            await messageApi.markAsRead(message.idMessage);
+          } catch (err: unknown) {
+            console.warn("Failed to mark message read", err);
+          }
+        }),
+      );
+    },
+    [currentUserId],
+  );
+
+  const loadMessages = useCallback(
+    async (conversationId: number) => {
+      setLoadingMessages(true);
+      setError(null);
+
+      try {
+        const response = await messageApi.getConversationMessages(conversationId);
+        setMessages(response);
+        await markMessagesRead(response);
+        setMessages((current) =>
+          current.map((message) => {
+            const isMine =
+              currentUserId !== null
+                ? message.idExpediteur === currentUserId
+                : message.estMonMessage;
+            return !isMine ? { ...message, est_lu: true } : message;
+          }),
+        );
+      } catch (err: unknown) {
+        setError("Impossible de charger les messages.");
+        console.error(err);
+      } finally {
+        setLoadingMessages(false);
+      }
+    },
+    [markMessagesRead, currentUserId],
+  );
 
   useEffect(() => {
-    if (!accessToken) return;
+    loadConversations();
+  }, [loadConversations]);
 
-    const loadNotifications = async () => {
-      try {
-        const [rawNotifications, unreadCount] = await Promise.all([
-          getNotifications(1, 20),
-          getCountNonLues(),
-        ]);
-        
-        // On force le cast ici car getNotifications retourne unknown[]
-        const normalized = (rawNotifications as RawNotification[]).map(normalizeNotification);
-        setNotifs(normalized);
-        setServerUnreadCount(unreadCount);
-      } catch (err) {
-        console.error("[SignalR Notifications] failed to load notifications", err);
-      }
-    };
-
-    loadNotifications();
-
-    const conn = buildNotificationConnection(accessToken);
-    connRef.current = conn;
-
-    // SignalR reçoit souvent des objets qui correspondent à RawNotification
-    conn.on("NouvelleNotification", (rawNotif: RawNotification) => {
-      const normalized = normalizeNotification(rawNotif);
-      setNotifs((prev) => [{ ...normalized, estLue: false }, ...prev]);
-      setServerUnreadCount((current) => (current !== null ? current + 1 : current));
-    });
-
-    conn.start().catch((err) => console.error("[SignalR Notifications]", err));
-
-    return () => {
-      if (connRef.current) {
-        connRef.current.stop();
-        connRef.current = null;
-      }
-    };
-  }, [accessToken]);
-
-  const localUnreadCount = notifs.filter((n) => !n.estLue).length;
-  const unreadCount = serverUnreadCount ?? localUnreadCount;
-  const nonLues = unreadCount;
-
-  const normalizeType = (type?: NotificationAddType): NotificationDto["type"] => {
-    if (type === "MESSAGE" || type === "FAVORI" || type === "ANNONCE") {
-      return type;
+  useEffect(() => {
+    if (selectedConvId !== null) {
+      loadMessages(selectedConvId);
     }
-    return "MESSAGE";
-  };
+  }, [selectedConvId, loadMessages]);
 
-  const addNotification = (titre: string, contenu = "", type?: NotificationAddType) => {
-    const newNotif: NotificationDto = {
-      id: Date.now(),
-      type: normalizeType(type),
-      titre,
-      contenu,
-      estLue: false,
-      dateCreation: new Date().toISOString(),
+  const contactName = activeConv
+    ? `${activeConv.prenomAutreUtilisateur ?? ""} ${activeConv.nomAutreUtilisateur ?? ""}`.trim() ||
+      `Conversation ${activeConv.idConversation}`
+    : "Conversation";
+
+  const handleSend = async () => {
+    if (!newMessage.trim() || selectedConvId === null) return;
+
+    const payload: CreateMessageRequest = {
+      idConversation: selectedConvId,
+      contenu: newMessage.trim(),
     };
-    setNotifs((prev) => [newNotif, ...prev]);
-  };
 
-  const markAsRead = async (id: number) => {
     try {
-      await marquerLue(id);
-      setServerUnreadCount((current) => (current !== null ? Math.max(current - 1, 0) : current));
-      setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, estLue: true } : n)));
-    } catch (err) {
-      console.error("[SignalR Notifications] markAsRead failed", err);
-    }
-  };
-
-  const markAllAsRead = async () => {
-    try {
-      await marquerToutesLues();
-      setServerUnreadCount(0);
-      setNotifs((prev) => prev.map((n) => ({ ...n, estLue: true })));
-    } catch (err) {
-      console.error("[SignalR Notifications] markAllAsRead failed", err);
+      await messageApi.sendMessage(payload);
+      setNewMessage("");
+      await loadMessages(selectedConvId);
+    } catch (err: unknown) {
+      console.error("Impossible d'envoyer le message", err);
+      setError("Impossible d'envoyer le message.");
     }
   };
 
   return (
-    <NotificationContext.Provider
-      value={{ notifs, unreadCount, nonLues, markAsRead, markAllAsRead, addNotification }}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="min-h-screen bg-background flex flex-col"
     >
-      {children}
-    </NotificationContext.Provider>
+      <Navbar />
+      <main className="flex-1 container py-6 max-w-6xl">
+        <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden flex h-[calc(100vh-200px)] min-h-[500px]">
+          <div className="w-full md:w-[340px] border-r border-border flex flex-col shrink-0">
+            <motion.div
+              className="p-4 border-b border-border"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <h2 className="font-heading font-bold text-lg mb-3">{t("messages_title")}</h2>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={t("search_messages")}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 rounded-xl bg-muted border-secondary/20"
+                />
+              </div>
+            </motion.div>
+            <ScrollArea className="flex-1">
+              {loadingConversations ? (
+                <div className="p-4 text-sm text-muted-foreground">
+                  Chargement des conversations...
+                </div>
+              ) : filteredConversations.length === 0 ? (
+                <div className="p-4 text-sm text-muted-foreground">
+                  Aucune conversation trouvée.
+                </div>
+              ) : (
+                filteredConversations.map((conv, i) => {
+                  const name =
+                    `${conv.prenomAutreUtilisateur ?? ""} ${conv.nomAutreUtilisateur ?? ""}`.trim() ||
+                    `Conversation ${conv.idConversation}`;
+                  const time = formatTimeAgo(conv.dateCreation);
+                  const isSelected = conv.idConversation === selectedConvId;
+
+                  return (
+                    <motion.button
+                      key={conv.idConversation}
+                      onClick={() => setSelectedConvId(conv.idConversation)}
+                      className={cn(
+                        "w-full flex items-center gap-3 p-4 hover:bg-muted/50 transition-colors text-left",
+                        isSelected && "bg-secondary/10 border-l-2 border-primary",
+                      )}
+                      variants={convItemVariants}
+                      initial="hidden"
+                      animate="visible"
+                      custom={i}
+                      whileHover={{ backgroundColor: "hsl(var(--muted) / 0.5)" }}
+                    >
+                      <div className="relative shrink-0">
+                        <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-bold">
+                          {name.charAt(0).toUpperCase()}
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="font-semibold text-sm truncate">{name}</p>
+                          <span className="text-xs text-muted-foreground shrink-0">{time}</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground truncate mt-0.5">
+                          {conv.dateCreation
+                            ? new Date(conv.dateCreation).toLocaleDateString("fr-FR")
+                            : ""}
+                        </p>
+                      </div>
+                    </motion.button>
+                  );
+                })
+              )}
+            </ScrollArea>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {selectedConvId !== null && activeConv ? (
+              <motion.div
+                key={selectedConvId}
+                className="flex-1 flex flex-col"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+              >
+                <motion.div
+                  className="p-4 border-b border-border flex items-center gap-3"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.1 }}
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="md:hidden shrink-0"
+                    onClick={() => setSelectedConvId(null)}
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                  </Button>
+                  <div className="w-10 h-10 rounded-lg bg-muted/80 flex items-center justify-center text-muted-foreground shrink-0">
+                    {contactName.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm truncate">{contactName}</p>
+                    <p className="text-xs text-muted-foreground truncate">{t("messages_title")}</p>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-primary"
+                    >
+                      <Phone className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-primary"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </motion.div>
+                <ScrollArea className="flex-1 p-4">
+                  <div className="space-y-3">
+                    {loadingMessages ? (
+                      <div className="text-sm text-muted-foreground">
+                        Chargement des messages...
+                      </div>
+                    ) : messages.length === 0 ? (
+                      <div className="text-sm text-muted-foreground">
+                        Aucun message pour cette conversation.
+                      </div>
+                    ) : (
+                      messages.map((msg, i) => {
+                        const isMine =
+                          currentUserId !== null
+                            ? msg.idExpediteur === currentUserId
+                            : Boolean(msg.estMonMessage);
+
+                        return (
+                          <motion.div
+                            key={msg.idMessage}
+                            className={cn("flex w-full", isMine ? "justify-end" : "justify-start")}
+                            variants={messageVariants}
+                            initial="hidden"
+                            animate="visible"
+                            custom={isMine}
+                            transition={{ delay: i * 0.07 }}
+                          >
+                            <motion.div
+                              className={cn(
+                                "max-w-[75%] rounded-3xl px-4 py-2.5 text-sm shadow-sm",
+                                isMine
+                                  ? "bg-primary text-primary-foreground rounded-br-[4px] rounded-tl-[28px] rounded-tr-[28px] rounded-bl-[28px] text-right"
+                                  : "bg-muted text-foreground rounded-bl-[4px] rounded-tr-[28px] rounded-tl-[28px] rounded-br-[28px]",
+                              )}
+                              whileHover={{ scale: 1.02 }}
+                              transition={{ duration: 0.15 }}
+                            >
+                              <p>{msg.contenu}</p>
+                              <p
+                                className={cn(
+                                  "text-[10px] mt-1",
+                                  isMine ? "text-primary-foreground/70" : "text-muted-foreground",
+                                )}
+                              >
+                                {formatTimeAgo(msg.dateEnvoi)}
+                              </p>
+                            </motion.div>
+                          </motion.div>
+                        );
+                      })
+                    )}
+                  </div>
+                </ScrollArea>
+                <motion.div
+                  className="p-4 border-t border-border flex items-center gap-2"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-primary shrink-0"
+                  >
+                    <Image className="h-5 w-5" />
+                  </Button>
+                  <Input
+                    placeholder={t("write_message")}
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                    className="rounded-xl bg-muted border-secondary/20"
+                  />
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }}>
+                    <Button
+                      onClick={handleSend}
+                      size="icon"
+                      className="bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl shrink-0"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </motion.div>
+                </motion.div>
+              </motion.div>
+            ) : (
+              <div className="hidden md:flex flex-1 items-center justify-center text-muted-foreground">
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  {loadingConversations ? "Chargement..." : t("select_conversation")}
+                </motion.p>
+              </div>
+            )}
+          </AnimatePresence>
+        </div>
+      </main>
+      <Footer />
+    </motion.div>
   );
 };
 
-export const useNotificationContext = () => {
-  const ctx = useContext(NotificationContext);
-  if (!ctx) throw new Error("useNotificationContext must be used inside NotificationProvider");
-  return ctx;
-};
+export default Messages;
