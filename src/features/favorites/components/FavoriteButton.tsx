@@ -8,6 +8,7 @@ import { useFavorite } from "@/features/favorites/hooks/useFavorite";
 
 interface FavoriteButtonProps {
   annonceId: string | number;
+  ownerId?: number;
   className?: string;
   showCount?: boolean;
   ariaLabel?: string;
@@ -17,6 +18,7 @@ interface FavoriteButtonProps {
 
 const FavoriteButton = ({
   annonceId,
+  ownerId,
   className,
   showCount = true,
   ariaLabel,
@@ -26,10 +28,14 @@ const FavoriteButton = ({
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const { isFavorite, favoritesCount, isPending, toggleFavorite } = useFavorite(annonceId, {
-    isFavorite: initialIsFavorite,
-    favoritesCount: initialFavoritesCount,
-  });
+  const { isFavorite, favoritesCount, isPending, toggleFavorite } = useFavorite(
+    annonceId,
+    {
+      isFavorite: initialIsFavorite,
+      favoritesCount: initialFavoritesCount,
+    },
+    { ownerId },
+  );
 
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {

@@ -1,7 +1,9 @@
 import { useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts";
+import { useUser } from "@/hooks/useUser";
 import { favoritesApi } from "@/features/favorites/api/favorites.api";
+import { envoyerNotification } from "@/services/notificationService";
 import type { FavoriteRecord, FavoritesState } from "@/features/favorites/types";
 
 const FAVORITES_STORAGE_KEY = "lbal:favorites:v1";
@@ -85,10 +87,13 @@ export const useFavoritesState = () => {
 export const useFavorite = (
   annonceId?: string | number,
   initialFallback?: { isFavorite?: boolean; favoritesCount?: number },
+  options?: { ownerId?: number },
 ) => {
   const queryClient = useQueryClient();
   const { isAuthenticated } = useAuth();
   const normalizedId = annonceId === undefined || annonceId === null ? null : String(annonceId);
+  const ownerId = options?.ownerId;
+  const { user } = useUser();
 
   const defaultRecord = useMemo(
     () => ({
@@ -167,6 +172,24 @@ export const useFavorite = (
 
       queryClient.setQueryData(FAVORITES_QUERY_KEY, nextState);
       persistFavoritesState(nextState);
+
+      if (nextValue && ownerId && Number(user?.id) !== ownerId) {
+        void envoyerNotification({
+          to: ownerId,
+          idUtilisateur: ownerId,
+          title: "Nouvelle favori",
+          content: `${user?.name ?? "Un utilisateur"} a ajouté votre annonce aux favoris.`,
+          entityType: "annonce",
+          entityId: Number(normalizedId),
+          lienAction: `/annonce/${normalizedId}`,
+          dateExpiration: new Date(
+            Date.now() + 24 * 60 * 60 * 1000 * (1 + Math.floor(Math.random() * 7)),
+          ).toISOString(),
+          notificationType: "favorite",
+        }).catch(() => {
+          // ignore notification failures
+        });
+      }
     },
   });
 

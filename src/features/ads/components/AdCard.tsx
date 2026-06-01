@@ -3,7 +3,7 @@ import { memo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useCart } from "@/hooks/useCart";
-import { useNotification } from "@/hooks/useNotification";
+import { useNotification } from "@/features/notifications/hooks/useNotification";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { FavoriteButton } from "@/features/favorites";
 
@@ -15,6 +15,7 @@ interface AdCardProps {
   image: string;
   date: string;
   seller?: string;
+  ownerId?: number;
   favoritesCount?: number;
   isFollowed?: boolean;
 }
@@ -27,6 +28,7 @@ const AdCard = ({
   image,
   date,
   seller = "Vendeur",
+  ownerId,
   favoritesCount,
   isFollowed,
 }: AdCardProps) => {
@@ -61,6 +63,7 @@ const AdCard = ({
             />
             <FavoriteButton
               annonceId={id}
+              ownerId={ownerId}
               className="absolute top-3 right-3 h-9 w-9 bg-background/80 backdrop-blur-sm hover:bg-background"
               showCount
               initialIsFavorite={isFollowed}

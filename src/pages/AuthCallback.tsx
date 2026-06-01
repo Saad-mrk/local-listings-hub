@@ -4,37 +4,30 @@ import { setAuthAccessToken } from "@/api/axiosInstance";
 
 const AUTH_TOKEN_KEY = "authToken";
 const ACCESS_TOKEN_KEY = "accessToken";
-const REFRESH_TOKEN_KEY = "refreshToken";
-const AUTH_EMAIL_KEY = "authEmail";
+
+const isLikelyJwt = (token: string): boolean =>
+  /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(token);
 
 const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
   const parts = token.split(".");
-
-  if (parts.length < 2) {
-    return null;
-  }
-
+  if (parts.length < 2) return null;
   try {
     const normalized = parts[1].replace(/-/g, "+").replace(/_/g, "/");
     const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
-    const payload = atob(padded);
-
-    return JSON.parse(payload) as Record<string, unknown>;
+    return JSON.parse(atob(padded)) as Record<string, unknown>;
   } catch {
     return null;
   }
 };
 
-const extractEmailFromToken = (token: string): string | null => {
+const isTokenExpired = (token: string): boolean => {
   const payload = decodeJwtPayload(token);
-
-  if (!payload) {
-    return null;
+  if (!payload || typeof payload.exp !== "number") {
+    return true;
   }
 
-  const candidate = payload.email ?? payload.sub ?? payload.preferred_username;
-
-  return typeof candidate === "string" && candidate.includes("@") ? candidate : null;
+  const now = Math.floor(Date.now() / 1000);
+  return payload.exp <= now;
 };
 
 const AuthCallback = () => {
@@ -43,30 +36,43 @@ const AuthCallback = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const accessToken = params.get("token") ?? params.get("accessToken");
-    const refreshToken = params.get("refresh") ?? params.get("refreshToken");
 
-    if (!accessToken || !refreshToken) {
+    const error = params.get("error");
+    if (error) {
+      navigate(`/login?error=${encodeURIComponent(error)}`, { replace: true });
+      return;
+    }
+
+    const accessToken = params.get("token");
+
+    if (!accessToken) {
       navigate("/login?error=google_failed", { replace: true });
+      return;
+    }
+
+    if (!isLikelyJwt(accessToken)) {
+      navigate("/login?error=invalid_token", { replace: true });
+      return;
+    }
+
+    if (isTokenExpired(accessToken)) {
+      navigate("/login?error=token_expired", { replace: true });
       return;
     }
 
     localStorage.setItem(AUTH_TOKEN_KEY, accessToken);
     localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
-    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-    setAuthAccessToken(accessToken);
 
-    const email = extractEmailFromToken(accessToken);
-    if (email) {
-      localStorage.setItem(AUTH_EMAIL_KEY, email);
-    }
+    setAuthAccessToken(accessToken);
 
     navigate("/dashboard", { replace: true });
   }, [location.search, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="text-center space-y-2">
+      <div className="text-center space-y-4">
+        {/* ✅ Spinner visuel */}
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
         <div className="text-sm text-muted-foreground">Connexion Google en cours...</div>
       </div>
     </div>

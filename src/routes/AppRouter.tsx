@@ -32,6 +32,7 @@ export const AppRouter = () => {
         <Route path="/ad/:id" element={<AdDetails />} />
         <Route path="/login" element={<Login />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/oauth-callback" element={<AuthCallback />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route
           path="/create"

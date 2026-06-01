@@ -1,15 +1,19 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { env } from "@/config/env";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuthForm } from "@/features/auth";
 import { Home, Mail, Lock, User, Phone, ArrowRight } from "lucide-react"; // Import d'icônes pour le look
 
-const getLoginErrorMessage = (error: unknown) => {
-  if (error instanceof Error && error.message) return error.message;
-  return "Erreur de connexion";
+const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
+  google_failed: "Connexion Google echouee. Veuillez reessayer.",
+  invalid_token: "Token invalide recu depuis Google.",
+  token_expired: "La session Google a expire. Veuillez reessayer.",
+  invalid_claims: "Identite Google invalide. Veuillez reessayer.",
+  access_denied: "Connexion Google annulee.",
 };
 
 const Login = () => {
@@ -29,6 +33,7 @@ const Login = () => {
   } = useAuthForm();
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const { t } = useLanguage();
 
@@ -39,6 +44,17 @@ const Login = () => {
 
   const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const errorCode = params.get("error");
+
+    if (!errorCode) {
+      return;
+    }
+
+    setErrorMessage(GOOGLE_ERROR_MESSAGES[errorCode] ?? "Erreur d'authentification.");
+  }, [location.search]);
+
   const handleLogin = async () => {
     if (isBlocked) return;
     setError("");
@@ -47,6 +63,12 @@ const Login = () => {
       setError(t("fill_all_fields"));
       return;
     }
+
+    if (!validateEmail(values.email)) {
+      setError(t("invalid_email"));
+      return;
+    }
+
     try {
       await login(values.email, values.password);
       navigate("/");
@@ -69,6 +91,12 @@ const Login = () => {
       setError(t("fill_all_fields"));
       return;
     }
+
+    if (!validateEmail(values.email)) {
+      setError(t("invalid_email"));
+      return;
+    }
+
     if (values.password.length < 6) {
       setError(t("password_min"));
       return;
@@ -93,7 +121,7 @@ const Login = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "https://localhost:7111/api/auth/google-login";
+    window.location.assign(`${env.apiUrl}/api/Auth/google-login`);
   };
 
   useEffect(() => {
@@ -154,6 +182,7 @@ const Login = () => {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
+                role="alert"
                 className="bg-destructive/10 border border-destructive/20 rounded-xl p-3 text-sm text-destructive font-medium flex items-center gap-2"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />

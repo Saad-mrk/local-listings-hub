@@ -1,10 +1,9 @@
 import axios from "axios";
 
 const API_BASE_URL = "https://localhost:7111";
-const REFRESH_TOKEN_KEY = "refreshToken";
-const AUTH_EMAIL_KEY = "authEmail";
+const AUTH_TOKEN_KEY = "authToken";
 
-let accessToken = null;
+let accessToken = localStorage.getItem(AUTH_TOKEN_KEY);
 let isRefreshing = false;
 let refreshQueue = [];
 
@@ -28,6 +27,7 @@ export const getAuthAccessToken = () => accessToken;
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
@@ -72,41 +72,26 @@ axiosInstance.interceptors.response.use(
     originalRequest._retry = true;
     isRefreshing = true;
 
-    const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-    const storedEmail = localStorage.getItem(AUTH_EMAIL_KEY);
-
-    if (!storedRefreshToken || !storedEmail) {
-      setAuthAccessToken(null);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
-      localStorage.removeItem(AUTH_EMAIL_KEY);
-      window.dispatchEvent(new Event("unauthorized"));
-      isRefreshing = false;
-      return Promise.reject(error);
-    }
-
     try {
       const refreshResponse = await axios.post(
         `${API_BASE_URL}/api/Auth/refresh`,
+        {},
         {
-          refreshToken: storedRefreshToken,
-          email: storedEmail,
-        },
-        {
+          withCredentials: true,
           headers: {
             "Content-Type": "application/json",
           },
         },
       );
 
-      const refreshedData = refreshResponse?.data?.data;
+      const refreshedData = refreshResponse?.data?.data ?? refreshResponse?.data;
 
-      if (!refreshedData?.accessToken || !refreshedData?.refreshToken) {
+      if (!refreshedData?.accessToken) {
         throw new Error("Invalid refresh token response format");
       }
 
       setAuthAccessToken(refreshedData.accessToken);
-      localStorage.setItem(REFRESH_TOKEN_KEY, refreshedData.refreshToken);
-      localStorage.setItem(AUTH_EMAIL_KEY, storedEmail);
+      localStorage.setItem(AUTH_TOKEN_KEY, refreshedData.accessToken);
 
       processRefreshQueue(null, refreshedData.accessToken);
 
@@ -117,8 +102,7 @@ axiosInstance.interceptors.response.use(
     } catch (refreshError) {
       processRefreshQueue(refreshError, null);
       setAuthAccessToken(null);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
-      localStorage.removeItem(AUTH_EMAIL_KEY);
+      localStorage.removeItem(AUTH_TOKEN_KEY);
       window.dispatchEvent(new Event("unauthorized"));
       return Promise.reject(refreshError);
     } finally {

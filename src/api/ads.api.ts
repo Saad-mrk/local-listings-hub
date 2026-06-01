@@ -1,11 +1,45 @@
-import { apiClient } from "@/api/client";
+import { apiClient, getAuthAccessToken } from "@/api/client";
+import { usersApi } from "@/api/users.api";
 import type { Ad, AnnonceDto, CreateAdDto } from "@/types";
+import type { UserProfile } from "@/types/user.types";
 import { EMPTY_PATH } from "zod";
 
 interface AdsEnvelope {
   data: AnnonceDto[];
   message?: string;
 }
+
+const attachSellerProfiles = async (ads: AnnonceDto[]): Promise<AnnonceDto[]> => {
+  const hasAuthToken = Boolean(getAuthAccessToken() ?? localStorage.getItem("authToken"));
+
+  if (!hasAuthToken) {
+    return ads;
+  }
+
+  const getSellerId = (ad: AnnonceDto) => (ad as any).idutilisateur ?? (ad as any).idutlisateur ?? null;
+  const sellerIds = Array.from(new Set(ads.map((ad) => getSellerId(ad)).filter(Number.isFinite)));
+  console.debug("attachSellerProfiles: sellerIds ->", sellerIds);
+  const sellerProfiles = new Map<number, UserProfile | null>();
+
+  await Promise.all(
+    sellerIds.map(async (sellerId) => {
+      try {
+        const profile = await usersApi.getById(sellerId);
+        sellerProfiles.set(sellerId, profile);
+      } catch {
+        console.warn(`attachSellerProfiles: failed to fetch profile for sellerId=${sellerId}`);
+        sellerProfiles.set(sellerId, null);
+      }
+    }),
+  );
+
+  console.debug("attachSellerProfiles: sellerProfiles ->", Array.from(sellerProfiles.entries()));
+
+  return ads.map((ad) => ({
+    ...ad,
+    vendeur: sellerProfiles.get(getSellerId(ad)) ?? null,
+  }));
+};
 
 export const adsApi = {
   getAll: async (filters?: {
@@ -26,7 +60,7 @@ export const adsApi = {
 
     const url = `/api/Annonce/getall/category/ville?${queryParams.toString()}`;
     const { data } = await apiClient.get<AdsEnvelope>(url);
-    return data.data;
+    return attachSellerProfiles(data.data);
   },
   getById: async (id: string): Promise<Ad> => {
     const { data } = await apiClient.get<Ad>(`/ads/${id}`);

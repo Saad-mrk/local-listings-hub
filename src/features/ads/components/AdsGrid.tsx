@@ -104,6 +104,7 @@ const AdsGrid = () => {
         city: ad.ville || "Non renseignée",
         image: resolveImageUrl(ad.photosUrls[0]),
         date: formatDate(ad.datepublication),
+        ownerId: ad.idutilisateur,
         favoritesCount: ad.numberoffavorites,
         isFollowed: ad.isFollowed,
       })),

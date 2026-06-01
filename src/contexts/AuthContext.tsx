@@ -51,10 +51,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const loginMutation = useMutation<AuthResponse, Error, LoginRequest>({
     mutationFn: authApi.login,
-    onSuccess: (response) => {
+    onSuccess: (response, variables) => {
       setAccessToken(response.token);
+      setEmail(variables.email);
       setAuthAccessToken(response.token);
       localStorage.setItem(AUTH_TOKEN_KEY, response.token);
+      localStorage.setItem(AUTH_EMAIL_KEY, variables.email);
 
       // Dispatch login event for other components
       window.dispatchEvent(
@@ -79,9 +81,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const login = useCallback(
     async (userEmail: string, password: string): Promise<AuthResponse> => {
-      localStorage.setItem(AUTH_EMAIL_KEY, userEmail);
-      setEmail(userEmail);
-
       const response = await loginMutation.mutateAsync({
         email: userEmail,
         password,

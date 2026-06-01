@@ -1,3 +1,5 @@
+import type { UserProfile } from "@/types/user.types";
+
 export interface Ad {
   id: string;
   title: string;
@@ -30,6 +32,7 @@ export enum AdStatus {
 
 export interface AnnonceDto {
   id: number;
+  idutilisateur: number;
   titre: string;
   prix: number;
   description: string;
@@ -49,4 +52,5 @@ export interface AnnonceDto {
   datepublication: string;
   isFollowed?: boolean; // Indique si l'annonce est suivie par l'utilisateur connecté
   numberoffavorites?: number; // Nombre de fois que l'annonce a été ajoutée aux favoris
+  vendeur?: UserProfile | null;
 }

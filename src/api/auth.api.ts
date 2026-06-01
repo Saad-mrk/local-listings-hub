@@ -20,17 +20,14 @@ const unwrapApiResponse = <T>(payload: ApiResponse<T>, fallbackMessage: string):
 
 export const authApi = {
   login: async (data: LoginRequest): Promise<AuthResponse> => {
-    const response = await apiClient.post<
-      ApiResponse<{ accessToken: string; refreshToken: string }>
-    >("/api/Auth/login", data);
+    const response = await apiClient.post<ApiResponse<{ accessToken: string }>>(
+      "/api/Auth/login",
+      data,
+    );
     const payload = response.data;
     const tokenData = unwrapApiResponse(payload, "Echec de l'authentification.");
 
-    // Store refresh token for later use
-    if (tokenData.refreshToken) {
-      localStorage.setItem("refreshToken", tokenData.refreshToken);
-      localStorage.setItem("authEmail", data.email);
-    }
+    localStorage.setItem("authEmail", data.email);
 
     return {
       token: tokenData.accessToken,

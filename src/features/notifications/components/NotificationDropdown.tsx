@@ -1,4 +1,5 @@
-import { Bell, X, CheckCircle, AlertCircle, Info } from "lucide-react";
+import { Bell, MessageCircle, Heart, Megaphone } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -6,11 +7,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useNotification } from "@/hooks/useNotification";
-import type { NotificationContextType } from "@/contexts/NotificationContext";
+import { useNotificationContext } from "@/contexts/NotificationContext";
 
-// Fonction pour formater le temps relatif
-const formatTimeAgo = (date: Date) => {
+const formatTimeAgo = (dateString: string) => {
+  const date = new Date(dateString);
   const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
 
   if (seconds < 60) return "À l'instant";
@@ -23,22 +23,26 @@ const formatTimeAgo = (date: Date) => {
   return date.toLocaleDateString("fr-FR");
 };
 
-const NotificationDropdown = () => {
-  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } =
-    useNotification() as NotificationContextType;
+const getIcon = (type: string) => {
+  switch (type) {
+    case "MESSAGE":
+      return <MessageCircle className="h-5 w-5 text-blue-500" />;
+    case "FAVORI":
+      return <Heart className="h-5 w-5 text-amber-500" />;
+    case "ANNONCE":
+      return <Megaphone className="h-5 w-5 text-emerald-500" />;
+    default:
+      return <Bell className="h-5 w-5 text-slate-500" />;
+  }
+};
 
-  const getIcon = (type: string) => {
-    switch (type) {
-      case "success":
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case "error":
-        return <AlertCircle className="h-5 w-5 text-red-500" />;
-      case "warning":
-        return <AlertCircle className="h-5 w-5 text-yellow-500" />;
-      default:
-        return <Info className="h-5 w-5 text-blue-500" />;
-    }
-  };
+interface NotificationDropdownProps {
+  onClose?: () => void;
+}
+
+export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
+  const { notifs, unreadCount, markAsRead, markAllAsRead } = useNotificationContext();
+  const navigate = useNavigate();
 
   return (
     <DropdownMenu>
@@ -58,7 +62,6 @@ const NotificationDropdown = () => {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-80">
-        {/* Header */}
         <div className="border-b border-border px-4 py-3 flex items-center justify-between">
           <h3 className="font-semibold text-sm">Notifications</h3>
           {unreadCount > 0 && (
@@ -68,53 +71,49 @@ const NotificationDropdown = () => {
           )}
         </div>
 
-        {/* Notifications List */}
         <div className="max-h-96 overflow-y-auto">
-          {notifications.length === 0 ? (
+          {notifs.length === 0 ? (
             <div className="px-4 py-8 text-center text-muted-foreground">
               <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
               <p className="text-sm">Aucune notification</p>
             </div>
           ) : (
-            notifications.map((notif) => (
+            notifs.map((notif) => (
               <DropdownMenuItem
                 key={notif.id}
-                className={`flex gap-3 px-4 py-3 cursor-pointer ${!notif.read ? "bg-primary/5" : ""}`}
-                onClick={() => markAsRead(notif.id)}
+                className={`flex flex-col gap-2 px-4 py-3 cursor-pointer ${!notif.estLue ? "bg-primary/5" : ""}`}
+                onClick={() => {
+                  if (notif.id !== undefined) {
+                    markAsRead(notif.id);
+                  }
+                  if (notif.lienAction) {
+                    navigate(notif.lienAction);
+                  }
+                  onClose?.();
+                }}
               >
-                <div className="flex-shrink-0 pt-1">{getIcon(notif.type)}</div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{notif.title}</p>
-                  <p className="text-xs text-muted-foreground truncate">{notif.message}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formatTimeAgo(notif.timestamp)}
-                  </p>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-shrink-0 pt-1">{getIcon(notif.type)}</div>
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm truncate">{notif.titre}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatTimeAgo(notif.dateCreation)}
+                      </p>
+                    </div>
+                  </div>
+                  {!notif.estLue && <span className="text-xs text-primary">Nouveau</span>}
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteNotification(notif.id);
-                  }}
-                  className="flex-shrink-0 text-muted-foreground hover:text-destructive"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                {notif.contenu && (
+                  <p className="text-sm text-muted-foreground line-clamp-2">{notif.contenu}</p>
+                )}
               </DropdownMenuItem>
             ))
           )}
         </div>
-
-        {/* Footer */}
-        {notifications.length > 0 && (
-          <div className="border-t border-border px-4 py-2">
-            <button className="w-full text-center text-xs text-primary hover:underline py-2">
-              Voir toutes les notifications
-            </button>
-          </div>
-        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
-};
+}
 
 export default NotificationDropdown;

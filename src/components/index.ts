@@ -19,3 +19,4 @@ export { default as StarRating } from "./StarRating";
 export { default as AnimatedStats } from "./AnimatedStats";
 export { default as ChatBot } from "./ChatBot";
 export { default as Comments } from "./Comments";
+export { default as ShareButtons } from "./ShareButtons";
